@@ -1,0 +1,1122 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#08131f">
+<title>Splash · Combate</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com/3.4.16"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          gold:    { 300: '#fff1a6', 400: '#ffe066', 500: '#f5c518', 600: '#c29a0c', 900: '#3a2f05' },
+          crimson: { 400: '#e0484f', 500: '#c0262d', 600: '#9b1c1c', 700: '#7a1414', 900: '#2e0909' },
+          sky:     { 300: '#a5e4ff', 400: '#62c8f5', 500: '#2aa7e0', 600: '#1a7bb0', 900: '#0b2a3d' },
+          ink:     { 950: '#08131f', 900: '#0e1b29', 800: '#152434', 700: '#1f3244', 600: '#2c4257', 400: '#8399ad', 300: '#b5c6d6' }
+        },
+        fontFamily: {
+          display: ['Cinzel', 'Georgia', 'serif'],
+          sans: ['Inter', 'system-ui', 'sans-serif']
+        }
+      }
+    }
+  };
+</script>
+<style>
+  body {
+    background: radial-gradient(ellipse at top, #0f3550 0%, #08131f 55%) fixed, #08131f;
+    color: #e5e7eb;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .card {
+    background: linear-gradient(180deg, rgba(31,50,68,.75), rgba(14,27,41,.9));
+    border: 1px solid rgba(245,197,24,.25);
+    border-radius: 1rem;
+    box-shadow: 0 10px 30px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.04);
+  }
+  .card-title { font-family: 'Cinzel', serif; letter-spacing: .06em; color: #ffe066; }
+  .btn {
+    min-height: 48px; border-radius: .75rem; font-weight: 700;
+    transition: transform .08s ease, filter .15s ease, background .15s ease; user-select: none;
+  }
+  .btn:active:not(:disabled) { transform: scale(.96); }
+  .btn:disabled { opacity: .35; cursor: not-allowed; }
+  .btn-gold    { background: linear-gradient(180deg,#ffe066,#c29a0c); color: #1f1802; }
+  .btn-crimson { background: linear-gradient(180deg,#c0262d,#7a1414); color: #fff; }
+  .btn-sky     { background: linear-gradient(180deg,#2aa7e0,#155f8a); color: #fff; }
+  .btn-shadow  { background: linear-gradient(180deg,#5b4a8a,#2d2050); color: #fff; }
+  .btn-slate   { background: #1f3244; color: #e5e7eb; border: 1px solid #2c4257; }
+  .btn-slate:hover:not(:disabled) { background: #2c4257; }
+  .btn-heal    { background: linear-gradient(180deg,#2f855a,#1c5238); color: #fff; }
+  .turn-row { transition: background .15s ease, border-color .15s ease, opacity .15s ease; }
+  .turn-row.done { background: rgba(155,28,28,.18); border-color: rgba(192,38,45,.6); }
+  .turn-row.done .turn-title { text-decoration: line-through; text-decoration-color: rgba(224,72,79,.8); opacity: .7; }
+  .check {
+    width: 2.25rem; height: 2.25rem; border-radius: .6rem; border: 2px solid #c29a0c;
+    display: grid; place-items: center; flex-shrink: 0; font-size: 1.2rem; font-weight: 800;
+  }
+  .done .check { background: #9b1c1c; border-color: #e0484f; color: #fff; }
+  .pip { width: 1.1rem; height: 1.1rem; border-radius: 9999px; border: 2px solid #c29a0c; }
+  .pip.on { background: radial-gradient(circle at 35% 35%, #fff1a6, #f5c518 60%, #c29a0c); box-shadow: 0 0 8px rgba(245,197,24,.6); }
+  .hp-bar { transition: width .3s ease, background .3s ease; }
+  input[type=number] { -moz-appearance: textfield; }
+  input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  .field {
+    background: #08131f; border: 1px solid #2c4257; border-radius: .6rem;
+    padding: .6rem .75rem; color: #e5e7eb; min-height: 48px; width: 100%;
+  }
+  .field:focus { outline: 2px solid #f5c518; outline-offset: 1px; }
+  #toast { transition: opacity .25s ease, transform .25s ease; }
+  .conc-glow { box-shadow: 0 0 0 2px rgba(42,167,224,.7), 0 0 18px rgba(42,167,224,.45); }
+</style>
+</head>
+<body class="font-sans min-h-screen">
+
+<div class="max-w-6xl mx-auto px-4 pb-28 pt-5">
+
+  <!-- ENCABEZADO -->
+  <header class="card p-4 sm:p-5 mb-5">
+    <div class="flex flex-wrap items-center justify-between gap-4">
+      <div>
+        <h1 class="font-display text-2xl sm:text-3xl font-extrabold text-gold-400 tracking-wide">💧 Splash "Miedoso"</h1>
+        <p class="text-ink-300 text-sm sm:text-base">Explorador Nivel 4 · Acechador en la Penumbra · Plasmoide · <span class="text-ink-400">D&amp;D 5e (2024)</span></p>
+      </div>
+      <div class="flex flex-wrap gap-2 text-center">
+        <div class="bg-ink-950/70 border border-gold-600/40 rounded-xl px-3 py-2 min-w-[72px]">
+          <div class="text-[10px] uppercase tracking-widest text-ink-400">CA</div>
+          <div class="font-display text-2xl text-gold-300">15</div>
+        </div>
+        <div class="bg-ink-950/70 border border-gold-600/40 rounded-xl px-3 py-2 min-w-[72px]">
+          <div class="text-[10px] uppercase tracking-widest text-ink-400">PG</div>
+          <div class="font-display text-2xl text-crimson-400" id="hdrHp">40</div>
+        </div>
+        <div class="bg-ink-950/70 border border-gold-600/40 rounded-xl px-3 py-2">
+          <div class="text-[10px] uppercase tracking-widest text-ink-400">Velocidad</div>
+          <div class="font-display text-lg text-gold-300 leading-8">30 pies / 9 m</div>
+        </div>
+        <div class="bg-ink-950/70 border border-crimson-600/60 rounded-xl px-3 py-2 min-w-[72px]">
+          <div class="text-[10px] uppercase tracking-widest text-ink-400">Asalto</div>
+          <div class="font-display text-2xl text-white" id="hdrRound">1</div>
+        </div>
+      </div>
+    </div>
+    <p class="text-[11px] text-ink-400 mt-3">Iniciativa +8 (Des +5 · Sab +3 por Emboscador Pavoroso) · CD de conjuros 13 · Resistencia a ácido y veneno · Tiro con Arco +2</p>
+  </header>
+
+  <div class="grid gap-5 lg:grid-cols-2">
+
+    <!-- 1. ECONOMÍA DEL TURNO -->
+    <section class="card p-4 sm:p-5">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="card-title text-xl">⏱️ Economía del Turno</h2>
+        <button class="btn btn-slate px-3 text-xs" data-act="newCombat">Nuevo combate</button>
+      </div>
+      <div id="turnList" class="space-y-2"></div>
+      <button class="btn btn-crimson w-full mt-4 text-lg font-display tracking-widest py-4" data-act="nextTurn">
+        ⏭️ PASAR TURNO
+      </button>
+    </section>
+
+    <!-- 2. SALUD -->
+    <section class="card p-4 sm:p-5">
+      <h2 class="card-title text-xl mb-3">❤️ Puntos de Golpe</h2>
+      <div id="hpBox"></div>
+    </section>
+
+    <!-- 2b. RECURSOS -->
+    <section class="card p-4 sm:p-5">
+      <h2 class="card-title text-xl mb-3">🔋 Recursos y Conjuros</h2>
+      <div id="concBox" class="mb-3"></div>
+      <div id="resList" class="space-y-3"></div>
+    </section>
+
+    <!-- 4. DESCANSOS -->
+    <section class="card p-4 sm:p-5">
+      <h2 class="card-title text-xl mb-3">🏕️ Descansos</h2>
+      <div id="hdBox" class="mb-4"></div>
+      <div class="grid sm:grid-cols-2 gap-3">
+        <button class="btn btn-slate py-4 border-gold-600/50" data-act="shortRest">
+          <div class="font-display text-gold-300 tracking-wide">☕ DESCANSO CORTO</div>
+          <div class="text-[11px] font-normal text-ink-400">1 hora · Dados de Golpe</div>
+        </button>
+        <button class="btn btn-gold py-4" data-act="longRest">
+          <div class="font-display tracking-wide">🌙 DESCANSO LARGO</div>
+          <div class="text-[11px] font-medium opacity-80">8 horas · Restablece TODO</div>
+        </button>
+      </div>
+    </section>
+
+    <!-- 3. ATAQUES -->
+    <section class="card p-4 sm:p-5 lg:col-span-2">
+      <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+        <h2 class="card-title text-xl">🏹 Ataques</h2>
+        <div id="atkBadges" class="flex flex-wrap gap-1"></div>
+      </div>
+      <div id="weaponList" class="grid gap-3 md:grid-cols-2 lg:grid-cols-4"></div>
+    </section>
+
+    <!-- CONJUROS -->
+    <section class="card p-4 sm:p-5 lg:col-span-2">
+      <h2 class="card-title text-xl mb-3">✨ Conjuros</h2>
+      <div id="spellList" class="space-y-5"></div>
+    </section>
+
+    <!-- 5. CONSUMIBLES -->
+    <section class="card p-4 sm:p-5 lg:col-span-2">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="card-title text-xl">🎒 Consumibles y Munición</h2>
+        <button class="btn btn-slate px-4 text-sm" data-act="toggleEdit" id="editBtn">✏️ Editar</button>
+      </div>
+      <div id="itemList" class="grid gap-3 md:grid-cols-2"></div>
+      <div id="addItem" class="hidden mt-4 p-3 rounded-xl border border-dashed border-gold-600/50">
+        <div class="text-sm text-gold-300 font-semibold mb-2">Agregar consumible</div>
+        <div class="grid gap-2 sm:grid-cols-[2fr_1fr_2fr_auto]">
+          <input class="field" id="newName" placeholder="Nombre">
+          <input class="field" id="newMax" type="number" min="1" placeholder="Cantidad" inputmode="numeric">
+          <input class="field" id="newInfo" placeholder="Nota (alcance, área…)">
+          <button class="btn btn-gold px-4" data-act="addItem">＋ Agregar</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- FICHA -->
+    <section class="card p-4 sm:p-5 lg:col-span-2">
+      <details open>
+        <summary class="card-title text-xl cursor-pointer select-none">📜 Ficha del Personaje · Nivel 4</summary>
+        <div id="sheet" class="mt-4 space-y-5"></div>
+      </details>
+    </section>
+
+    <!-- REGISTRO -->
+    <section class="card p-4 sm:p-5 lg:col-span-2">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="card-title text-xl">📜 Registro de la batalla</h2>
+        <button class="btn btn-slate px-3 text-xs" data-act="clearLog">Limpiar</button>
+      </div>
+      <ul id="logList" class="space-y-1 text-sm max-h-64 overflow-y-auto pr-1"></ul>
+    </section>
+  </div>
+
+  <div class="text-center mt-6">
+    <button class="text-xs text-ink-400 underline underline-offset-4 hover:text-crimson-400" data-act="factoryReset">
+      Restaurar ficha a valores iniciales
+    </button>
+  </div>
+</div>
+
+<!-- MODAL DESCANSO CORTO -->
+<div id="modal" class="fixed inset-0 z-40 hidden items-end sm:items-center justify-center bg-black/70 p-4">
+  <div class="card w-full max-w-md p-5" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <h3 id="modalTitle" class="card-title text-xl mb-1">☕ Descanso Corto</h3>
+    <p class="text-xs text-ink-400 mb-4">Gasta Dados de Golpe: cada uno cura 1d10 + Mod. Con (+3).</p>
+    <div id="modalBody"></div>
+    <button class="btn btn-gold w-full mt-4" data-act="closeModal">Terminar descanso</button>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast" class="fixed left-1/2 bottom-6 z-50 -translate-x-1/2 translate-y-4 opacity-0 pointer-events-none
+     bg-ink-900 border border-gold-500 text-gold-300 font-semibold rounded-xl px-5 py-3 shadow-2xl text-center max-w-[90vw]"></div>
+
+<script>
+(() => {
+  'use strict';
+
+  const STORAGE_KEY = 'splash-tracker-v1';
+  const CON_MOD = 3;      // Constitución 17 (hoja de Quest Portal)
+  const HIT_DIE = 10;
+  const SPEED = 30;
+  const AMBUSH_BONUS = 10; // Salto Emboscador: +10 pies en el primer turno del combate
+  const SPELL_DC = 13;
+  const SPELL_ATK = 5;
+  const MARK = 'Marca del Cazador';
+
+  // ---------- Utilidades ----------
+  const meters = ft => (Math.round(ft * 3) / 10).toLocaleString('es-AR');
+  const fmt = ft => `${ft} pies / ${meters(ft)} m`;
+  const rollDie = sides => 1 + Math.floor(Math.random() * sides);
+  const rollMany = (n, sides) => Array.from({ length: n }, () => rollDie(sides));
+  const sum = arr => arr.reduce((a, b) => a + b, 0);
+  const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+  const uid = () => Math.random().toString(36).slice(2, 9);
+  const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+  // ---------- Estado por defecto (valores actuales de la hoja) ----------
+  const defaults = () => ({
+    hp: 40, maxHp: 40, temp: 0,
+    round: 1, moved: 0, dash: false,
+    conc: null,
+    turn: { move: false, action: false, bonus: false, reaction: false, object: false, dread: false },
+    res: {
+      slot1:   { cur: 3, max: 3 },
+      favored: { cur: 2, max: 2 },
+      dread:   { cur: 3, max: 3 },
+      initiate:{ cur: 1, max: 1 },
+      hd:      { cur: 4, max: 4 }
+    },
+    items: [
+      { id: uid(), icon: '🏹', name: 'Flechas', cur: 39, max: 39, info: `Arco largo 150/600 pies (${meters(150)}/${meters(600)} m) · Arco corto 80/320` },
+      { id: uid(), icon: '🔥', name: 'Antorchas', cur: 10, max: 10, info: `Luz brillante ${fmt(20)} + tenue ${fmt(20)} · 1 hora` },
+      { id: uid(), icon: '🫙', name: 'Frascos de aceite', cur: 2, max: 2, info: 'Arrojadizo o combustible (6 horas)' },
+      { id: uid(), icon: '🍖', name: 'Raciones', cur: 2, max: 2, info: '1 por día de viaje' }
+    ],
+    log: []
+  });
+
+  const RESOURCES = {
+    slot1:    { icon: '✨', name: 'Espacios de conjuro (nivel 1)', sub: 'Se recuperan en Descanso Largo' },
+    favored:  { icon: '🎯', name: 'Enemigo Predilecto', sub: `${MARK} sin gastar espacio · Descanso Largo` },
+    dread:    { icon: '👁️', name: 'Golpe Pavoroso', sub: '+2d6 psíquico al impactar · 1 por turno · Descanso Largo' },
+    initiate: { icon: '🌿', name: 'Iniciado en la Magia (druida)', sub: 'Conjuro de nivel 1 de la dote sin gastar espacio · Descanso Largo' }
+  };
+
+  // ---------- Ficha (Nivel 4 · Quest Portal) ----------
+  const PROF = 2;
+  const abilityMod = score => Math.floor((score - 10) / 2);
+  const signed = n => (n >= 0 ? `+${n}` : `${n}`);
+
+  const ABILITIES = [
+    { k: 'FUE', name: 'Fuerza',       score: 16, save: true },
+    { k: 'DES', name: 'Destreza',     score: 20, save: true },
+    { k: 'CON', name: 'Constitución', score: 17, save: false },
+    { k: 'INT', name: 'Inteligencia', score: 14, save: false },
+    { k: 'SAB', name: 'Sabiduría',    score: 17, save: false },
+    { k: 'CAR', name: 'Carisma',      score: 15, save: false }
+  ];
+  const MOD = Object.fromEntries(ABILITIES.map(a => [a.k, abilityMod(a.score)]));
+
+  // 0 = sin competencia · 1 = competente · 2 = pericia
+  const SKILLS = [
+    ['Acrobacias', 'DES'], ['Arcanos', 'INT'], ['Atletismo', 'FUE', 1], ['Engaño', 'CAR'],
+    ['Historia', 'INT'], ['Interpretación', 'CAR'], ['Intimidación', 'CAR'], ['Investigación', 'INT'],
+    ['Juego de Manos', 'DES'], ['Medicina', 'SAB'], ['Naturaleza', 'INT'], ['Percepción', 'SAB', 1],
+    ['Perspicacia', 'SAB', 1], ['Persuasión', 'CAR'], ['Religión', 'INT'], ['Sigilo', 'DES', 2],
+    ['Supervivencia', 'SAB', 1], ['Trato con Animales', 'SAB']
+  ].map(([name, ab, prof = 0]) => ({ name, ab, prof, mod: MOD[ab] + PROF * prof }));
+  const skill = name => SKILLS.find(s => s.name === name);
+
+  const WEAPONS = [
+    { name: 'Arco Largo', icon: '🏹', atk: 9, dice: [1, 8], dmg: 5, type: 'perforante', range: `150/600 pies (${meters(150)}/${meters(600)} m)`,
+      note: 'Maestría: Ralentizar (−10 pies de velocidad) · Tiro con Arco +2', ammo: 'Flechas', ranged: true },
+    { name: 'Arco Corto', icon: '🏹', atk: 9, dice: [1, 6], dmg: 5, type: 'perforante', range: `80/320 pies (${meters(80)}/${meters(320)} m)`,
+      note: 'Tiro con Arco +2', ammo: 'Flechas', ranged: true },
+    { name: 'Espada Corta', icon: '🗡️', atk: 7, dice: [1, 6], dmg: 5, type: 'perforante', range: fmt(5), note: 'Sutil, ligera' },
+    { name: 'Cimitarra', icon: '⚔️', atk: 7, dice: [1, 6], dmg: 5, type: 'cortante', range: fmt(5), note: 'Sutil, ligera' }
+  ];
+
+  // time: A = Acción, AA = Acción Adicional, R = Reacción, M = 1 minuto o más
+  const SPELLS = [
+    { lvl: 0, name: 'Elementalismo', en: 'Elementalism', time: 'A', range: fmt(30), desc: 'Efectos menores de agua, aire, fuego o tierra en un cubo de 5 pies.' },
+    { lvl: 0, name: 'Reparar', en: 'Mending', time: 'M', range: 'Toque', desc: 'Arregla una grieta o rotura de hasta 30 cm (1 minuto).' },
+    { lvl: 1, name: MARK, en: "Hunter's Mark", time: 'AA', range: fmt(90), conc: true, free: 'favored',
+      desc: '+1d6 de fuerza a cada impacto contra la presa y ventaja para rastrearla. Si cae a 0 PG, transferís la marca con una Acción Adicional.' },
+    { lvl: 1, name: 'Tormenta de Espinas', en: 'Hail of Thorns', time: 'AA', range: 'Esfera de 5 pies alrededor del objetivo',
+      save: 'Des', half: true, dmg: { n: 1, d: 10, b: 0, type: 'perforante' }, desc: 'Inmediatamente después de impactar con un arma a distancia.' },
+    { lvl: 1, name: 'Curar Heridas', en: 'Cure Wounds', time: 'A', range: 'Toque', heal: { n: 2, d: 8, b: 3 }, desc: 'Una criatura recupera 2d8 + 3 PG.' },
+    { lvl: 1, name: 'Disfrazarse', en: 'Disguise Self · Acechador', time: 'A', range: 'Personal', desc: 'Siempre preparado. Cambiás tu apariencia durante 1 hora.' },
+    { lvl: 1, name: 'Alarma', en: 'Alarm · Ritual', time: 'M', range: fmt(30), ritual: true, desc: 'Alarma mental o sonora en un cubo de 20 pies durante 8 horas. Como ritual no gasta espacio.' }
+  ];
+
+  const TIME_LABEL = { A: 'Acción', AA: 'Acción Adicional', R: 'Reacción', M: '1 minuto' };
+  const TIME_SLOT = { A: 'action', AA: 'bonus', R: 'reaction' };
+
+  const FEATURES = [
+    ['Enemigo Predilecto', `${MARK} siempre preparado; 2 lanzamientos gratis por descanso largo.`],
+    ['Estilo de Combate: Tiro con Arco', '+2 a las tiradas de ataque con armas a distancia.'],
+    ['Maestría con Armas', 'Arco Largo: Ralentizar. La hoja no indica la segunda.'],
+    ['Explorador Hábil', 'Pericia en Sigilo y dos idiomas extra.'],
+    ['Emboscador Pavoroso', `Sumás Sab (+${MOD.SAB}) a la iniciativa. En tu primer turno de cada combate, +${AMBUSH_BONUS} pies de velocidad.`],
+    ['Golpe Pavoroso', `1 vez por turno, al impactar con un arma: +2d6 psíquico. ${MOD.SAB} usos por descanso largo.`],
+    ['Visión en la Umbra', 'Visión en la oscuridad 120 pies (60 + 60). En oscuridad total sos invisible para quien dependa de visión en la oscuridad.'],
+    ['Mejora de Característica (Nv 4)', 'La hoja no indica cuál se eligió.'],
+    ['Iniciado en la Magia (druida)', 'Elementalismo y Reparar + 1 conjuro de nivel 1 gratis por descanso largo (la hoja no indica cuál).'],
+    ['Amorfo', 'Atravesás espacios de 1 pulgada sin equipo. Ventaja para iniciar o escapar de un agarre.'],
+    ['Resistencia Natural', 'Resistencia a ácido y veneno; ventaja en salvaciones contra quedar envenenado.'],
+    ['Forma Cambiante', 'Acción: cambiás de forma. Acción adicional: pseudópodo de 10 pies para manipular objetos (máx. 10 lb).'],
+    ['Contener la Respiración', 'Hasta 1 hora.']
+  ];
+
+  const TURN = [
+    { k: 'move',     icon: '🦶', title: 'Movimiento',              desc: `Hasta ${fmt(SPEED)}` },
+    { k: 'action',   icon: '🏹', title: 'Acción Principal',        desc: 'Atacar · Lanzar conjuro · Correr · Destrabarse · Esquivar · Esconderse' },
+    { k: 'bonus',    icon: '🎯', title: 'Acción Adicional',        desc: `${MARK} · Tormenta de Espinas · Pseudópodo` },
+    { k: 'dread',    icon: '👁️', title: 'Golpe Pavoroso (1/turno)', desc: '+2d6 psíquico al impactar con un arma' },
+    { k: 'reaction', icon: '🛡️', title: 'Reacción',                desc: `Ataque de oportunidad (${fmt(5)})` },
+    { k: 'object',   icon: '🗝️', title: 'Interacción con Objeto',  desc: 'Desenvainar, abrir una puerta, recoger algo…' }
+  ];
+
+  // ---------- Persistencia ----------
+  function load() {
+    const base = defaults();
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return base;
+      const saved = JSON.parse(raw);
+      return {
+        ...base, ...saved,
+        turn: { ...base.turn, ...saved.turn },
+        res: Object.fromEntries(Object.keys(base.res).map(k => [k, { ...base.res[k], ...(saved.res || {})[k] }])),
+        items: Array.isArray(saved.items) ? saved.items : base.items,
+        log: Array.isArray(saved.log) ? saved.log : []
+      };
+    } catch { return base; }
+  }
+
+  function save() {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch { /* sin almacenamiento */ }
+  }
+
+  let state = load();
+  const ui = { editing: false };
+
+  // ---------- Feedback ----------
+  let toastTimer;
+  function toast(msg) {
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.style.opacity = '1';
+    el.style.transform = 'translate(-50%, 0)';
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => {
+      el.style.opacity = '0';
+      el.style.transform = 'translate(-50%, 1rem)';
+    }, 3200);
+    if (navigator.vibrate) navigator.vibrate(30);
+  }
+
+  function log(text) {
+    const time = new Date().toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
+    state.log.unshift({ r: state.round, t: text, time });
+    state.log = state.log.slice(0, 60);
+  }
+
+  // ---------- Lógica de PG ----------
+  function heal(amount, source) {
+    const before = state.hp;
+    state.hp = clamp(state.hp + amount, 0, state.maxHp);
+    const gained = state.hp - before;
+    log(`${source}: +${gained} PG (${state.hp}/${state.maxHp})`);
+    return gained;
+  }
+
+  function damage(amount, source = 'Daño') {
+    let rest = amount;
+    if (state.temp > 0) {
+      const absorbed = Math.min(state.temp, rest);
+      state.temp -= absorbed;
+      rest -= absorbed;
+    }
+    state.hp = clamp(state.hp - rest, 0, state.maxHp);
+    log(`${source}: −${amount} PG (${state.hp}/${state.maxHp}${state.temp ? `, ${state.temp} temp.` : ''})`);
+    if (state.hp === 0) {
+      if (state.conc) { log(`🔮 Concentración perdida: ${state.conc}`); state.conc = null; }
+      toast('💀 ¡Splash cae inconsciente! Tiradas de salvación contra muerte.');
+    } else if (state.conc) {
+      // Reglas 2024: CD = 10 o la mitad del daño, lo que sea mayor (máx. 30)
+      const dc = Math.min(30, Math.max(10, Math.floor(amount / 2)));
+      log(`🔮 TS de Constitución CD ${dc} para mantener ${state.conc}`);
+      toast(`🔮 Concentración: TS Con CD ${dc} para mantener ${state.conc}`);
+    }
+  }
+
+  // ---------- Movimiento ----------
+  const ambush = () => state.round === 1;
+  const baseSpeed = () => SPEED + (ambush() ? AMBUSH_BONUS : 0);
+  const moveBudget = () => baseSpeed() * (state.dash ? 2 : 1);
+
+  function setMoved(ft) {
+    state.moved = clamp(ft, 0, moveBudget());
+    state.turn.move = state.moved >= moveBudget();
+  }
+
+  // ---------- Render ----------
+  function renderHeader() {
+    document.getElementById('hdrHp').textContent = state.hp;
+    document.getElementById('hdrRound').textContent = state.round;
+  }
+
+  function renderTurn() {
+    const budget = moveBudget();
+    const rows = TURN.map(t => {
+      const done = state.turn[t.k];
+      const steps = Array.from({ length: budget / 5 }, (_, i) => {
+        const ft = (i + 1) * 5;
+        const on = state.moved >= ft;
+        const extraStep = ft > baseSpeed();
+        return `
+          <button class="rounded-lg border-2 min-h-[48px] flex flex-col items-center justify-center leading-tight transition
+                         ${on ? (extraStep ? 'bg-crimson-600 border-crimson-400 text-white' : 'bg-gold-500 border-gold-300 text-ink-950')
+                              : (extraStep ? 'border-crimson-700/70 text-ink-400' : 'border-gold-600/60 text-ink-300')}"
+                  data-act="moveTo" data-ft="${ft}" aria-label="Moverse hasta ${fmt(ft)}" aria-pressed="${on}">
+            <span class="text-xs font-bold">${ft}</span>
+            <span class="text-[10px] opacity-80">${meters(ft)} m</span>
+          </button>`;
+      }).join('');
+      const extraMove = t.k === 'move' ? `
+        <div class="mt-3 space-y-2" data-act="noop">
+          ${ambush() ? `<div class="text-xs text-sky-300 font-semibold">🌘 Salto Emboscador: +${AMBUSH_BONUS} pies en este primer turno</div>` : ''}
+          <div class="flex items-center justify-between text-xs">
+            <span class="text-gold-300 font-semibold">Usado: ${fmt(state.moved)}</span>
+            <span class="text-ink-300">Restan: ${fmt(budget - state.moved)}</span>
+          </div>
+          <div class="grid grid-cols-6 gap-1.5">${steps}</div>
+          <div class="grid grid-cols-[auto_1fr_auto] gap-2">
+            <button class="btn btn-slate px-4 min-h-[40px]" data-act="move" data-v="-5">−5</button>
+            <button class="btn min-h-[40px] text-sm ${state.dash ? 'btn-crimson' : 'btn-slate'}" data-act="toggleDash">
+              🏃 Correr ${state.dash ? `(activo · ${fmt(baseSpeed() * 2)})` : '(×2 movimiento)'}
+            </button>
+            <button class="btn btn-slate px-4 min-h-[40px]" data-act="move" data-v="5">+5</button>
+          </div>
+        </div>` : '';
+      return `
+        <div class="turn-row ${done ? 'done' : ''} rounded-xl border border-ink-600 bg-ink-950/50 p-3 cursor-pointer"
+             data-act="toggle" data-k="${t.k}" role="checkbox" aria-checked="${done}" tabindex="0">
+          <div class="flex items-center gap-3">
+            <div class="check">${done ? '✓' : ''}</div>
+            <div class="flex-1 min-w-0">
+              <div class="turn-title font-semibold text-base">${t.icon} ${t.title}</div>
+              <div class="text-xs text-ink-400">${t.desc}</div>
+            </div>
+          </div>
+          ${extraMove}
+        </div>`;
+    });
+    document.getElementById('turnList').innerHTML = rows.join('');
+  }
+
+  function renderHp() {
+    const pct = state.maxHp ? state.hp / state.maxHp * 100 : 0;
+    const color = pct > 50 ? '#2f855a' : pct > 25 ? '#f5c518' : '#c0262d';
+    const status = state.hp === 0 ? '💀 Inconsciente' : pct <= 50 ? '🩸 Malherido' : '🛡️ En pie';
+    document.getElementById('hpBox').innerHTML = `
+      <div class="flex items-end justify-between mb-2">
+        <div>
+          <span class="font-display text-5xl font-extrabold text-white">${state.hp}</span>
+          <span class="text-2xl text-ink-400">/ ${state.maxHp}</span>
+          ${state.temp ? `<span class="ml-2 text-sky-300 font-semibold">+${state.temp} temp.</span>` : ''}
+        </div>
+        <span class="text-sm text-ink-300">${status}</span>
+      </div>
+      <div class="h-4 bg-ink-950 rounded-full overflow-hidden border border-ink-600 mb-4">
+        <div class="hp-bar h-full" style="width:${pct}%;background:${color}"></div>
+      </div>
+      <div class="grid grid-cols-4 gap-2 mb-3">
+        <button class="btn btn-crimson text-lg" data-act="hp" data-v="-5">−5</button>
+        <button class="btn btn-crimson text-lg" data-act="hp" data-v="-1">−1</button>
+        <button class="btn btn-heal text-lg" data-act="hp" data-v="1">+1</button>
+        <button class="btn btn-heal text-lg" data-act="hp" data-v="5">+5</button>
+      </div>
+      <div class="grid grid-cols-[1fr_auto_auto] gap-2">
+        <input id="hpCustom" class="field text-center text-lg" type="number" min="0" inputmode="numeric" placeholder="Cantidad">
+        <button class="btn btn-crimson px-4" data-act="hpCustom" data-mode="dmg">🗡️ Daño</button>
+        <button class="btn btn-heal px-4" data-act="hpCustom" data-mode="heal">✨ Curar</button>
+      </div>
+      <button class="btn btn-sky w-full mt-2 text-sm" data-act="hpCustom" data-mode="resist">
+        🧪 Daño de ácido o veneno (resistencia: mitad)
+      </button>
+      <div class="grid grid-cols-[1fr_auto] gap-2 mt-2">
+        <input id="tempInput" class="field text-center" type="number" min="0" inputmode="numeric" placeholder="PG temporales">
+        <button class="btn btn-slate px-4" data-act="setTemp">Fijar temp.</button>
+      </div>`;
+  }
+
+  function pips(cur, max) {
+    return Array.from({ length: max }, (_, i) => `<span class="pip ${i < cur ? 'on' : ''}"></span>`).join('');
+  }
+
+  function renderConc() {
+    const box = document.getElementById('concBox');
+    if (!state.conc) {
+      box.innerHTML = '<div class="rounded-xl border border-dashed border-ink-600 p-3 text-sm text-ink-400">🔮 Sin concentración activa</div>';
+      return;
+    }
+    box.innerHTML = `
+      <div class="rounded-xl border border-sky-500 bg-sky-900/40 p-3 conc-glow">
+        <div class="flex items-center justify-between gap-3">
+          <div class="min-w-0">
+            <div class="text-[10px] uppercase tracking-widest text-sky-300">Concentrado en</div>
+            <div class="font-display text-lg text-white truncate">${esc(state.conc)}</div>
+          </div>
+          <button class="btn btn-slate px-3 text-xs" data-act="dropConc">Terminar</button>
+        </div>
+        <div class="grid grid-cols-2 gap-2 mt-2">
+          <button class="btn btn-sky text-sm" data-act="concSave">🎲 TS Con (${signed(MOD.CON)})</button>
+          ${state.conc === MARK ? '<button class="btn btn-slate text-sm" data-act="moveMark">🎯 Mover marca (AA)</button>' : '<span></span>'}
+        </div>
+      </div>`;
+  }
+
+  function renderResources() {
+    document.getElementById('resList').innerHTML = Object.entries(RESOURCES).map(([k, meta]) => {
+      const r = state.res[k];
+      return `
+        <div class="rounded-xl border border-ink-600 bg-ink-950/50 p-3">
+          <div class="flex items-center justify-between gap-3">
+            <div class="min-w-0">
+              <div class="font-semibold">${meta.icon} ${meta.name}</div>
+              <div class="text-xs text-ink-400">${meta.sub}</div>
+            </div>
+            <div class="font-display text-2xl text-gold-300 whitespace-nowrap">${r.cur}<span class="text-ink-400 text-base">/${r.max}</span></div>
+          </div>
+          <div class="flex gap-1.5 my-2">${pips(r.cur, r.max)}</div>
+          <div class="grid grid-cols-[1fr_auto] gap-2">
+            <button class="btn btn-crimson" data-act="spend" data-r="${k}" ${r.cur === 0 ? 'disabled' : ''}>Gastar 1</button>
+            <button class="btn btn-slate px-5" data-act="inc" data-r="${k}" ${r.cur >= r.max ? 'disabled' : ''}>＋1</button>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  function renderHitDice() {
+    const hd = state.res.hd;
+    document.getElementById('hdBox').innerHTML = `
+      <div class="rounded-xl border border-ink-600 bg-ink-950/50 p-3 flex items-center justify-between gap-3">
+        <div>
+          <div class="font-semibold">❤️ Dados de Golpe</div>
+          <div class="text-xs text-ink-400">d${HIT_DIE} + ${CON_MOD} (Con) · se recuperan todos en Descanso Largo</div>
+          <div class="flex gap-1.5 mt-2">${pips(hd.cur, hd.max)}</div>
+        </div>
+        <div class="font-display text-2xl text-gold-300">${hd.cur}<span class="text-ink-400 text-base">/${hd.max}</span></div>
+      </div>`;
+  }
+
+  function renderWeapons() {
+    const dreadOk = !state.turn.dread && state.res.dread.cur > 0;
+    const marked = state.conc === MARK;
+    document.getElementById('atkBadges').innerHTML = `
+      <span class="text-xs px-3 py-1 rounded-full ${dreadOk ? 'bg-gold-900 text-gold-300' : 'bg-crimson-900 text-crimson-400'}">
+        👁️ Golpe Pavoroso ${state.turn.dread ? 'usado este turno' : `${state.res.dread.cur}/${state.res.dread.max}`}
+      </span>
+      ${marked ? '<span class="text-xs px-3 py-1 rounded-full bg-sky-900 text-sky-300">🎯 Presa marcada: +1d6 fuerza</span>' : ''}`;
+    document.getElementById('weaponList').innerHTML = WEAPONS.map((w, i) => {
+      const ammo = w.ammo ? findItemByName(w.ammo) : null;
+      const noAmmo = ammo && ammo.cur === 0;
+      return `
+        <div class="rounded-xl border border-ink-600 bg-ink-950/50 p-3 flex flex-col">
+          <div class="flex items-start justify-between gap-3">
+            <div class="min-w-0">
+              <div class="font-semibold">${w.icon} ${w.name}</div>
+              <div class="text-xs text-ink-400">${w.range} · ${w.type}</div>
+            </div>
+            <div class="text-right whitespace-nowrap">
+              <div class="font-display text-gold-300">${signed(w.atk)}</div>
+              <div class="text-xs text-ink-300">${w.dice[0]}d${w.dice[1]} + ${w.dmg}</div>
+            </div>
+          </div>
+          <div class="text-xs text-ink-400 flex-1">${w.note}${ammo ? ` · quedan ${ammo.cur}` : ''}</div>
+          <div class="grid gap-2 mt-2">
+            <button class="btn btn-crimson" data-act="rollWeapon" data-i="${i}" ${noAmmo ? 'disabled' : ''}>🎲 Atacar</button>
+            <button class="btn btn-shadow text-sm" data-act="rollWeapon" data-i="${i}" data-dread="1" ${!dreadOk || noAmmo ? 'disabled' : ''}>👁️ Atacar + Golpe Pavoroso</button>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  const diceText = d => `${d.n}d${d.d}${d.b ? ` + ${d.b}` : ''}`;
+
+  function renderSpells() {
+    const slots = state.res.slot1.cur;
+    const groups = [
+      { lvl: 0, title: 'Trucos', sub: 'A voluntad' },
+      { lvl: 1, title: 'Nivel 1', sub: `Gastan un espacio de nivel 1 (${slots}/${state.res.slot1.max})` }
+    ];
+    document.getElementById('spellList').innerHTML = groups.map(g => {
+      const cards = SPELLS.map((s, i) => ({ s, i })).filter(({ s }) => s.lvl === g.lvl).map(({ s, i }) => {
+        const tags = [
+          `<span class="px-2 py-0.5 rounded-full bg-ink-700 text-ink-300">${TIME_LABEL[s.time]}</span>`,
+          s.conc ? '<span class="px-2 py-0.5 rounded-full bg-sky-900 text-sky-300">Concentración</span>' : '',
+          s.ritual ? '<span class="px-2 py-0.5 rounded-full bg-ink-700 text-gold-300">Ritual</span>' : '',
+          s.save ? `<span class="px-2 py-0.5 rounded-full bg-crimson-900 text-crimson-400">TS ${s.save} CD ${SPELL_DC}</span>` : ''
+        ].join(' ');
+        const dmgLine = s.dmg ? `<div class="text-xs text-gold-300 mt-1">Daño: ${diceText(s.dmg)} ${s.dmg.type}${s.half ? ' · mitad si supera' : ''}</div>`
+          : s.heal ? `<div class="text-xs text-emerald-400 mt-1">Curación: ${diceText(s.heal)}</div>` : '';
+        const castBtn = s.lvl > 0
+          ? `<button class="btn btn-sky w-full text-sm" data-act="cast" data-i="${i}" ${slots === 0 ? 'disabled' : ''}>✨ Lanzar (espacio ${slots}/${state.res.slot1.max})</button>`
+          : `<button class="btn btn-gold w-full text-sm" data-act="cast" data-i="${i}">✨ Lanzar</button>`;
+        const freeBtn = s.free
+          ? `<button class="btn btn-slate w-full text-sm mt-2" data-act="cast" data-i="${i}" data-free="1" ${state.res[s.free].cur === 0 ? 'disabled' : ''}>🎯 Gratis por ${RESOURCES[s.free].name} (${state.res[s.free].cur})</button>`
+          : '';
+        const ritualBtn = s.ritual
+          ? `<button class="btn btn-slate w-full text-sm mt-2" data-act="cast" data-i="${i}" data-ritual="1">📖 Como ritual (+10 minutos)</button>`
+          : '';
+        const healSelf = s.heal
+          ? `<button class="btn btn-heal w-full text-sm mt-2" data-act="cast" data-i="${i}" data-self="1" ${slots === 0 ? 'disabled' : ''}>💧 Curarme a mí</button>`
+          : '';
+        return `
+          <div class="rounded-xl border ${state.conc === s.name ? 'border-sky-500 conc-glow' : 'border-ink-600'} bg-ink-950/50 p-3 flex flex-col">
+            <div class="font-semibold">${esc(s.name)} <span class="text-[11px] text-ink-400 font-normal">${esc(s.en)}</span></div>
+            <div class="text-xs text-ink-400">${s.range}</div>
+            <div class="flex flex-wrap gap-1 text-[10px] mt-1.5">${tags}</div>
+            ${dmgLine}
+            <div class="text-xs text-ink-300 mt-1 flex-1">${s.desc}</div>
+            <div class="mt-2">${castBtn}${freeBtn}${ritualBtn}${healSelf}</div>
+          </div>`;
+      }).join('');
+      return `
+        <div>
+          <h3 class="text-sm uppercase tracking-widest text-ink-400 mb-2">${g.title} <span class="normal-case tracking-normal text-[11px]">· ${g.sub}</span></h3>
+          <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">${cards}</div>
+        </div>`;
+    }).join('');
+  }
+
+  function renderItems() {
+    document.getElementById('editBtn').textContent = ui.editing ? '✅ Listo' : '✏️ Editar';
+    document.getElementById('addItem').classList.toggle('hidden', !ui.editing);
+    const list = document.getElementById('itemList');
+    if (!state.items.length) {
+      list.innerHTML = '<p class="text-ink-400 text-sm">No hay consumibles. Pulsa “Editar” para agregar.</p>';
+      return;
+    }
+    list.innerHTML = state.items.map(it => {
+      if (ui.editing) {
+        return `
+          <div class="rounded-xl border border-gold-600/40 bg-ink-950/60 p-3 space-y-2">
+            <div class="grid grid-cols-[3.5rem_1fr] gap-2">
+              <input class="field text-center" data-item="${it.id}" data-field="icon" value="${esc(it.icon)}" aria-label="Ícono">
+              <input class="field" data-item="${it.id}" data-field="name" value="${esc(it.name)}" aria-label="Nombre">
+            </div>
+            <input class="field text-sm" data-item="${it.id}" data-field="info" value="${esc(it.info)}" placeholder="Nota" aria-label="Nota">
+            <div class="grid grid-cols-[1fr_1fr_auto] gap-2 items-center">
+              <label class="text-xs text-ink-400">Actual<input class="field mt-1" type="number" min="0" inputmode="numeric" data-item="${it.id}" data-field="cur" value="${it.cur}"></label>
+              <label class="text-xs text-ink-400">Máximo<input class="field mt-1" type="number" min="1" inputmode="numeric" data-item="${it.id}" data-field="max" value="${it.max}"></label>
+              <button class="btn btn-crimson px-4 self-end" data-act="delItem" data-id="${it.id}" aria-label="Eliminar">🗑️</button>
+            </div>
+          </div>`;
+      }
+      const pct = it.max ? it.cur / it.max * 100 : 0;
+      return `
+        <div class="rounded-xl border border-ink-600 bg-ink-950/50 p-3">
+          <div class="flex items-start justify-between gap-3">
+            <div class="min-w-0">
+              <div class="font-semibold">${esc(it.icon)} ${esc(it.name)}</div>
+              <div class="text-xs text-ink-400">${esc(it.info)}</div>
+            </div>
+            <div class="font-display text-2xl whitespace-nowrap ${it.cur === 0 ? 'text-crimson-400' : 'text-gold-300'}">${it.cur}<span class="text-ink-400 text-base">/${it.max}</span></div>
+          </div>
+          <div class="h-1.5 bg-ink-950 rounded-full my-2 overflow-hidden"><div class="h-full bg-gold-500" style="width:${pct}%"></div></div>
+          <div class="grid grid-cols-[1fr_auto_auto] gap-2">
+            <button class="btn btn-crimson" data-act="useItem" data-id="${it.id}" ${it.cur === 0 ? 'disabled' : ''}>−1 Uso rápido</button>
+            <button class="btn btn-slate px-4" data-act="itemInc" data-id="${it.id}" ${it.cur >= it.max ? 'disabled' : ''}>＋1</button>
+            <button class="btn btn-slate px-3 text-xs" data-act="itemRefill" data-id="${it.id}" title="Rellenar">↻</button>
+          </div>
+          ${isAmmo(it) ? `
+            <button class="btn btn-gold w-full mt-2 text-sm" data-act="recoverAmmo" data-id="${it.id}" ${it.spent ? '' : 'disabled'}>
+              🏹 Recuperar munición tras el combate · +${Math.floor((it.spent || 0) / 2)}
+              <span class="font-normal opacity-80">(gastadas: ${it.spent || 0})</span>
+            </button>` : ''}
+        </div>`;
+    }).join('');
+  }
+
+  function renderSheet() {
+    const stat = (label, value) => `
+      <div class="bg-ink-950/60 border border-ink-600 rounded-xl px-3 py-2 text-center">
+        <div class="text-[10px] uppercase tracking-widest text-ink-400">${label}</div>
+        <div class="font-display text-lg text-gold-300">${value}</div>
+      </div>`;
+    const abilities = ABILITIES.map(a => {
+      const m = MOD[a.k];
+      const save = m + (a.save ? PROF : 0);
+      return `
+        <div class="bg-ink-950/60 border ${a.save ? 'border-gold-500/70' : 'border-ink-600'} rounded-xl p-2 text-center">
+          <div class="text-[10px] uppercase tracking-widest text-ink-400">${a.name}</div>
+          <div class="font-display text-2xl text-white">${signed(m)}</div>
+          <div class="text-xs text-ink-400 mb-1">${a.score}</div>
+          <div class="grid grid-cols-2 gap-1">
+            <button class="btn btn-slate text-[11px] min-h-[36px]" data-act="rollCheck" data-label="Prueba de ${a.name}" data-mod="${m}">Prueba</button>
+            <button class="btn ${a.save ? 'btn-gold' : 'btn-slate'} text-[11px] min-h-[36px]" data-act="rollCheck" data-label="Salvación de ${a.name}" data-mod="${save}">TS ${signed(save)}</button>
+          </div>
+        </div>`;
+    }).join('');
+    const skills = SKILLS.map(s => `
+      <button class="flex items-center justify-between gap-2 rounded-lg border ${s.prof ? 'border-gold-500/60 bg-gold-900/30' : 'border-ink-700 bg-ink-950/40'} px-3 py-2 min-h-[44px] text-left hover:border-gold-400"
+              data-act="rollCheck" data-label="${s.name}" data-mod="${s.mod}">
+        <span class="text-sm">${s.prof === 2 ? '★' : s.prof ? '◆' : '◇'} ${s.name} <span class="text-[10px] text-ink-400">${s.ab}</span></span>
+        <span class="font-display ${s.prof ? 'text-gold-300' : 'text-ink-300'}">${signed(s.mod)}</span>
+      </button>`).join('');
+    const features = FEATURES.map(([t, d]) => `
+      <li class="text-sm"><span class="text-gold-300 font-semibold">${t}:</span> <span class="text-ink-300">${d}</span></li>`).join('');
+
+    document.getElementById('sheet').innerHTML = `
+      <div class="grid grid-cols-3 sm:grid-cols-6 gap-2">
+        ${stat('Competencia', signed(PROF))}
+        ${stat('Iniciativa', signed(MOD.DES + MOD.SAB))}
+        ${stat('CA', '15')}
+        ${stat('Percepción pasiva', 10 + skill('Percepción').mod)}
+        ${stat('CD conjuros', SPELL_DC)}
+        ${stat('Dados de Golpe', `4d${HIT_DIE}`)}
+      </div>
+      <button class="btn btn-gold w-full" data-act="rollCheck" data-label="Iniciativa" data-mod="${MOD.DES + MOD.SAB}">🎲 Tirar iniciativa (${signed(MOD.DES + MOD.SAB)})</button>
+      <div>
+        <h3 class="text-sm uppercase tracking-widest text-ink-400 mb-2">Características y salvaciones</h3>
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">${abilities}</div>
+      </div>
+      <div>
+        <h3 class="text-sm uppercase tracking-widest text-ink-400 mb-2">Habilidades <span class="normal-case tracking-normal">(◆ competente · ★ pericia)</span></h3>
+        <div class="grid gap-1.5 sm:grid-cols-2 lg:grid-cols-3">${skills}</div>
+      </div>
+      <div>
+        <h3 class="text-sm uppercase tracking-widest text-ink-400 mb-2">Rasgos y dotes</h3>
+        <ul class="space-y-1.5">${features}</ul>
+      </div>
+      <div class="text-xs text-ink-400 space-y-1">
+        <div><span class="text-gold-400">Competencias:</span> armaduras ligeras y medias, escudos; armas sencillas y marciales.</div>
+        <div><span class="text-gold-400">Herramientas:</span> de artesano.</div>
+        <div><span class="text-gold-400">Idiomas:</span> Común, Silvano, Dracónico, Primordial.</div>
+      </div>`;
+  }
+
+  function renderLog() {
+    const el = document.getElementById('logList');
+    el.innerHTML = state.log.length
+      ? state.log.map(l => `
+          <li class="flex gap-2 border-b border-ink-700/60 pb-1">
+            <span class="text-ink-400 text-xs whitespace-nowrap pt-0.5">${esc(l.time)} · A${l.r}</span>
+            <span>${esc(l.t)}</span>
+          </li>`).join('')
+      : '<li class="text-ink-400">Aún no hay eventos.</li>';
+  }
+
+  function renderModal() {
+    const hd = state.res.hd;
+    document.getElementById('modalBody').innerHTML = `
+      <div class="flex items-center justify-between rounded-xl bg-ink-950/60 border border-ink-600 p-3 mb-3">
+        <div>
+          <div class="text-xs text-ink-400">Puntos de Golpe</div>
+          <div class="font-display text-3xl text-white">${state.hp}<span class="text-ink-400 text-lg">/${state.maxHp}</span></div>
+        </div>
+        <div class="text-right">
+          <div class="text-xs text-ink-400">Dados de Golpe</div>
+          <div class="font-display text-3xl text-gold-300">${hd.cur}<span class="text-ink-400 text-lg">/${hd.max}</span></div>
+        </div>
+      </div>
+      <button class="btn btn-heal w-full text-lg mb-3" data-act="rollHD" ${hd.cur === 0 || state.hp >= state.maxHp ? 'disabled' : ''}>
+        🎲 Tirar 1d${HIT_DIE} + ${CON_MOD}
+      </button>
+      <div class="text-xs text-ink-400 mb-1">¿Tiraste un dado físico? Ingresa el resultado del d${HIT_DIE}:</div>
+      <div class="grid grid-cols-[1fr_auto] gap-2">
+        <input id="hdManual" class="field text-center" type="number" min="1" max="${HIT_DIE}" inputmode="numeric" placeholder="1 – ${HIT_DIE}">
+        <button class="btn btn-slate px-4" data-act="manualHD" ${hd.cur === 0 ? 'disabled' : ''}>Aplicar</button>
+      </div>
+      ${state.hp >= state.maxHp ? '<p class="text-xs text-emerald-400 mt-2">PG al máximo.</p>' : ''}`;
+  }
+
+  function render() {
+    renderHeader(); renderTurn(); renderHp(); renderConc(); renderResources(); renderHitDice();
+    renderWeapons(); renderSpells(); renderItems(); renderLog();
+    if (!document.getElementById('modal').classList.contains('hidden')) renderModal();
+    save();
+  }
+
+  // ---------- Acciones ----------
+  const findItem = id => state.items.find(i => i.id === id);
+  const findItemByName = name => state.items.find(i => i.name === name);
+  const isAmmo = it => /flecha|virote|munici|dardo|bala/i.test(it.name);
+
+  function spendHitDie(face) {
+    const hd = state.res.hd;
+    if (hd.cur === 0) return;
+    hd.cur--;
+    const total = Math.max(0, face + CON_MOD);
+    const gained = heal(total, `Dado de Golpe (d${HIT_DIE}: ${face} + ${CON_MOD})`);
+    toast(`❤️ d${HIT_DIE} = ${face} → +${gained} PG`);
+  }
+
+  function openModal() {
+    const m = document.getElementById('modal');
+    m.classList.remove('hidden'); m.classList.add('flex');
+    renderModal();
+  }
+
+  function closeModal() {
+    const m = document.getElementById('modal');
+    m.classList.add('hidden'); m.classList.remove('flex');
+  }
+
+  function rollDice(d, crit = false) {
+    const rolls = rollMany(d.n * (crit ? 2 : 1), d.d);
+    return { rolls, total: sum(rolls) + (d.b || 0) };
+  }
+
+  function resetTurn() {
+    Object.keys(state.turn).forEach(k => { state.turn[k] = false; });
+    state.moved = 0; state.dash = false;
+  }
+
+  const actions = {
+    noop() { return false; },
+    toggle({ k }) {
+      if (k === 'move') {
+        setMoved(state.turn.move ? 0 : moveBudget());
+        return;
+      }
+      state.turn[k] = !state.turn[k];
+    },
+    move({ v }) { setMoved(state.moved + Number(v)); },
+    moveTo({ ft }) {
+      const n = Number(ft);
+      // Tocar la última casilla marcada la desmarca
+      setMoved(state.moved === n ? n - 5 : n);
+    },
+    toggleDash() {
+      state.dash = !state.dash;
+      if (state.dash) {
+        state.turn.action = true;
+        log(`🏃 Correr: movimiento ${fmt(moveBudget())}`);
+      }
+      setMoved(state.moved);
+    },
+    nextTurn() {
+      resetTurn();
+      state.round++;
+      log(`— Comienza el asalto ${state.round} —`);
+      toast(`⏭️ Asalto ${state.round}: economía restablecida`);
+    },
+    newCombat() {
+      if (!confirm('¿Iniciar un nuevo combate? El asalto vuelve a 1.')) return false;
+      resetTurn();
+      state.round = 1;
+      log('⚔️ ¡Nuevo combate! Salto Emboscador activo');
+    },
+    hp({ v }) {
+      const n = Number(v);
+      n < 0 ? damage(-n) : heal(n, 'Curación');
+    },
+    hpCustom({ mode }) {
+      const input = document.getElementById('hpCustom');
+      const n = Math.abs(parseInt(input.value, 10));
+      if (!n) { toast('Ingresa una cantidad'); return false; }
+      if (mode === 'resist') damage(Math.floor(n / 2), `Ácido/veneno (${n} → resistencia)`);
+      else mode === 'dmg' ? damage(n) : heal(n, 'Curación');
+    },
+    setTemp() {
+      const n = Math.max(0, parseInt(document.getElementById('tempInput').value, 10) || 0);
+      state.temp = n;
+      log(`PG temporales fijados en ${n}`);
+    },
+    dropConc() {
+      log(`🔮 Concentración terminada: ${state.conc}`);
+      state.conc = null;
+    },
+    concSave() {
+      const d = rollDie(20);
+      const total = d + MOD.CON;
+      log(`🔮 TS Con (concentración en ${state.conc}): ${d} ${signed(MOD.CON)} = ${total}`);
+      toast(`🔮 TS Con: ${d} ${signed(MOD.CON)} = ${total}`);
+    },
+    moveMark() {
+      state.turn.bonus = true;
+      log(`🎯 ${MARK}: marca transferida a una nueva presa`);
+      toast('🎯 Marca transferida (Acción Adicional)');
+    },
+    spend({ r }) {
+      const res = state.res[r];
+      if (res.cur === 0) return false;
+      res.cur--;
+      log(`${RESOURCES[r].icon} ${RESOURCES[r].name}: −1 (${res.cur}/${res.max})`);
+    },
+    inc({ r }) {
+      const res = state.res[r];
+      res.cur = clamp(res.cur + 1, 0, res.max);
+    },
+    cast({ i, free, ritual, self }) {
+      const s = SPELLS[Number(i)];
+      if (s.conc && state.conc && state.conc !== s.name &&
+          !confirm(`Ya estás concentrado en ${state.conc}. ¿Cambiar a ${s.name}?`)) return false;
+      let source = 'truco';
+      if (free) {
+        const res = state.res[s.free];
+        if (res.cur === 0) return false;
+        res.cur--;
+        source = 'gratis';
+      } else if (ritual) {
+        source = 'ritual';
+      } else if (s.lvl > 0) {
+        const slot = state.res.slot1;
+        if (slot.cur === 0) { toast('Sin espacios de conjuro de nivel 1'); return false; }
+        slot.cur--;
+        source = `espacio ${slot.cur}/${slot.max}`;
+      }
+      if (TIME_SLOT[s.time] && !ritual) state.turn[TIME_SLOT[s.time]] = true;
+      if (s.conc) {
+        if (state.conc && state.conc !== s.name) log(`🔮 Concentración terminada: ${state.conc}`);
+        state.conc = s.name;
+      }
+      let detail = '';
+      if (s.dmg) {
+        const dm = rollDice(s.dmg);
+        detail = `TS ${s.save} CD ${SPELL_DC} · daño ${dm.rolls.join('+')} = ${dm.total}${s.half ? ` (mitad: ${Math.floor(dm.total / 2)})` : ''}`;
+      } else if (s.heal) {
+        const h = rollDice(s.heal);
+        if (self) {
+          const gained = heal(h.total, s.name);
+          detail = `te curás +${gained} PG`;
+        } else {
+          detail = `cura ${h.rolls.join('+')} + ${s.heal.b} = ${h.total} PG`;
+        }
+      }
+      log(`✨ ${s.name} (${source})${detail ? ': ' + detail : ''}`);
+      toast(`✨ ${s.name}${detail ? ' · ' + detail : ''}`);
+    },
+    rollWeapon({ i, dread }) {
+      const w = WEAPONS[Number(i)];
+      const ammo = w.ammo ? findItemByName(w.ammo) : null;
+      if (ammo) {
+        if (ammo.cur === 0) { toast(`Sin ${w.ammo.toLowerCase()}`); return false; }
+        ammo.cur--;
+        ammo.spent = (ammo.spent || 0) + 1;
+      }
+      if (dread) {
+        if (state.turn.dread || state.res.dread.cur === 0) return false;
+        state.res.dread.cur--;
+        state.turn.dread = true;
+      }
+      const d = rollDie(20);
+      const crit = d === 20;
+      // Crítico: se duplican todos los dados de daño, no el modificador
+      const base = rollMany(w.dice[0] * (crit ? 2 : 1), w.dice[1]);
+      const dreadRolls = dread ? rollMany(2 * (crit ? 2 : 1), 6) : [];
+      const markRolls = state.conc === MARK ? rollMany(crit ? 2 : 1, 6) : [];
+      const total = sum(base) + sum(dreadRolls) + sum(markRolls) + w.dmg;
+      state.turn.action = true;
+      const atkText = d === 1 ? 'pifia (1 natural)' : `${d} ${signed(w.atk)} = ${d + w.atk}${crit ? ' ¡CRÍTICO!' : ''}`;
+      const parts = [`${base.join('+')} + ${w.dmg}`];
+      if (dreadRolls.length) parts.push(`psíquico ${dreadRolls.join('+')}`);
+      if (markRolls.length) parts.push(`marca ${markRolls.join('+')}`);
+      log(`${w.icon} ${w.name}: ataque ${atkText} · daño ${parts.join(' · ')} = ${total}`);
+      toast(`${w.icon} ${w.name}: ${atkText} · Daño ${total}${dread ? ' 👁️' : ''}${markRolls.length ? ' 🎯' : ''}`);
+    },
+    useItem({ id }) {
+      const it = findItem(id);
+      if (!it || it.cur === 0) return false;
+      it.cur--;
+      if (isAmmo(it)) it.spent = (it.spent || 0) + 1;
+      log(`${it.icon} ${it.name}: −1 (${it.cur}/${it.max})`);
+    },
+    itemInc({ id }) {
+      const it = findItem(id);
+      if (!it) return false;
+      it.cur = clamp(it.cur + 1, 0, it.max);
+      // Recoger una a mano descuenta de las pendientes de recuperar
+      if (isAmmo(it) && it.spent) it.spent--;
+    },
+    recoverAmmo({ id }) {
+      const it = findItem(id);
+      if (!it || !it.spent) return false;
+      // Reglas 2024: tras el combate, 1 minuto de búsqueda recupera la mitad (redondeo hacia abajo)
+      const back = Math.min(Math.floor(it.spent / 2), it.max - it.cur);
+      it.cur += back;
+      log(`${it.icon} ${it.name}: recuperadas ${back} de ${it.spent} gastadas (${it.cur}/${it.max})`);
+      toast(`🏹 Recuperaste ${back} de ${it.spent} ${it.name.toLowerCase()}`);
+      it.spent = 0;
+    },
+    itemRefill({ id }) {
+      const it = findItem(id);
+      if (!it) return false;
+      it.cur = it.max;
+      it.spent = 0;
+      log(`${it.icon} ${it.name} rellenado (${it.max}/${it.max})`);
+    },
+    toggleEdit() { ui.editing = !ui.editing; },
+    addItem() {
+      const name = document.getElementById('newName').value.trim();
+      const max = Math.max(1, parseInt(document.getElementById('newMax').value, 10) || 1);
+      const info = document.getElementById('newInfo').value.trim();
+      if (!name) { toast('El consumible necesita un nombre'); return false; }
+      state.items.push({ id: uid(), icon: '📦', name, cur: max, max, info });
+      ['newName', 'newMax', 'newInfo'].forEach(i => { document.getElementById(i).value = ''; });
+    },
+    delItem({ id }) {
+      const it = findItem(id);
+      if (!it || !confirm(`¿Eliminar "${it.name}"?`)) return false;
+      state.items = state.items.filter(i => i.id !== id);
+    },
+    shortRest() {
+      log('☕ Descanso Corto');
+      toast('☕ Descanso Corto completado');
+      openModal();
+    },
+    longRest() {
+      if (!confirm('¿Realizar un Descanso Largo (8 horas)? Se restablece todo.')) return false;
+      state.hp = state.maxHp;
+      state.temp = 0;
+      state.conc = null;
+      Object.values(state.res).forEach(r => { r.cur = r.max; });
+      resetTurn();
+      state.round = 1;
+      log('🌙 Descanso Largo: PG y todos los recursos restablecidos');
+      toast('🌙 Descanso Largo: ¡Splash está como nuevo!');
+    },
+    rollHD() { spendHitDie(rollDie(HIT_DIE)); },
+    manualHD() {
+      const face = parseInt(document.getElementById('hdManual').value, 10);
+      if (!(face >= 1 && face <= HIT_DIE)) { toast(`El d${HIT_DIE} debe estar entre 1 y ${HIT_DIE}`); return false; }
+      spendHitDie(face);
+    },
+    closeModal() { closeModal(); },
+    rollCheck({ label, mod }) {
+      const d = rollDie(20);
+      const total = d + Number(mod);
+      const tag = d === 20 ? ' · ¡20 natural!' : d === 1 ? ' · 1 natural' : '';
+      log(`🎲 ${label}: ${d} ${signed(Number(mod))} = ${total}${tag}`);
+      toast(`🎲 ${label}: ${d} ${signed(Number(mod))} = ${total}${tag}`);
+    },
+    clearLog() { state.log = []; },
+    factoryReset() {
+      if (!confirm('¿Restaurar la ficha completa a sus valores iniciales? Se pierden los cambios.')) return false;
+      state = defaults();
+      ui.editing = false;
+    }
+  };
+
+  // ---------- Eventos ----------
+  document.addEventListener('click', e => {
+    const el = e.target.closest('[data-act]');
+    if (!el || el.disabled) return;
+    const fn = actions[el.dataset.act];
+    if (!fn) return;
+    if (fn({ ...el.dataset }) !== false) render();
+  });
+
+  document.addEventListener('keydown', e => {
+    const row = e.target.closest?.('.turn-row');
+    if (row && (e.key === ' ' || e.key === 'Enter') && e.target === row) {
+      e.preventDefault();
+      actions.toggle({ k: row.dataset.k });
+      render();
+    }
+    if (e.key === 'Escape') closeModal();
+  });
+
+  document.addEventListener('change', e => {
+    const el = e.target;
+    if (!el.dataset.item) return;
+    const it = findItem(el.dataset.item);
+    if (!it) return;
+    const f = el.dataset.field;
+    if (f === 'max') {
+      it.max = Math.max(1, parseInt(el.value, 10) || 1);
+      it.cur = Math.min(it.cur, it.max);
+    } else if (f === 'cur') {
+      it.cur = clamp(parseInt(el.value, 10) || 0, 0, it.max);
+    } else {
+      it[f] = el.value;
+    }
+    render();
+  });
+
+  document.getElementById('modal').addEventListener('click', e => {
+    if (e.target.id === 'modal') closeModal();
+  });
+
+  renderSheet();
+  render();
+})();
+</script>
+</body>
+</html>

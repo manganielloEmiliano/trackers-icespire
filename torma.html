@@ -1,0 +1,1186 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0a1610">
+<title>Törma · Combate</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com/3.4.16"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          gold:    { 300: '#d9f5b0', 400: '#b6e57a', 500: '#8fcf4a', 600: '#5f9a24', 900: '#1f3309' },
+          crimson: { 400: '#e0484f', 500: '#c0262d', 600: '#9b1c1c', 700: '#7a1414', 900: '#2e0909' },
+          leaf:    { 300: '#a7f3d0', 400: '#5fd8a4', 500: '#22b07a', 600: '#167a55', 900: '#0b2e21' },
+          bark:    { 300: '#e8cfa6', 400: '#c9a26b', 500: '#a07a45', 900: '#33240f' },
+          ink:     { 950: '#0a1610', 900: '#101f17', 800: '#16291f', 700: '#20362a', 600: '#2e4a3a', 400: '#86a394', 300: '#b6cdc0' }
+        },
+        fontFamily: {
+          display: ['Cinzel', 'Georgia', 'serif'],
+          sans: ['Inter', 'system-ui', 'sans-serif']
+        }
+      }
+    }
+  };
+</script>
+<style>
+  body {
+    background: radial-gradient(ellipse at top, #1d3a1a 0%, #0a1610 55%) fixed, #0a1610;
+    color: #e5e7eb;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .card {
+    background: linear-gradient(180deg, rgba(32,54,42,.75), rgba(16,31,23,.9));
+    border: 1px solid rgba(143,207,74,.25);
+    border-radius: 1rem;
+    box-shadow: 0 10px 30px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.04);
+  }
+  .card-title { font-family: 'Cinzel', serif; letter-spacing: .06em; color: #b6e57a; }
+  .btn {
+    min-height: 48px; border-radius: .75rem; font-weight: 700;
+    transition: transform .08s ease, filter .15s ease, background .15s ease; user-select: none;
+  }
+  .btn:active:not(:disabled) { transform: scale(.96); }
+  .btn:disabled { opacity: .35; cursor: not-allowed; }
+  .btn-gold    { background: linear-gradient(180deg,#b6e57a,#5f9a24); color: #0f1a05; }
+  .btn-crimson { background: linear-gradient(180deg,#c0262d,#7a1414); color: #fff; }
+  .btn-leaf    { background: linear-gradient(180deg,#22b07a,#11583e); color: #fff; }
+  .btn-bark    { background: linear-gradient(180deg,#a07a45,#5a4020); color: #fff; }
+  .btn-slate   { background: #20362a; color: #e5e7eb; border: 1px solid #2e4a3a; }
+  .btn-slate:hover:not(:disabled) { background: #2e4a3a; }
+  .btn-heal    { background: linear-gradient(180deg,#2f855a,#1c5238); color: #fff; }
+  .turn-row { transition: background .15s ease, border-color .15s ease, opacity .15s ease; }
+  .turn-row.done { background: rgba(155,28,28,.18); border-color: rgba(192,38,45,.6); }
+  .turn-row.done .turn-title { text-decoration: line-through; text-decoration-color: rgba(224,72,79,.8); opacity: .7; }
+  .check {
+    width: 2.25rem; height: 2.25rem; border-radius: .6rem; border: 2px solid #5f9a24;
+    display: grid; place-items: center; flex-shrink: 0; font-size: 1.2rem; font-weight: 800;
+  }
+  .done .check { background: #9b1c1c; border-color: #e0484f; color: #fff; }
+  .pip { width: 1.1rem; height: 1.1rem; border-radius: 9999px; border: 2px solid #5f9a24; }
+  .pip.on { background: radial-gradient(circle at 35% 35%, #d9f5b0, #8fcf4a 60%, #5f9a24); box-shadow: 0 0 8px rgba(143,207,74,.6); }
+  .hp-bar { transition: width .3s ease, background .3s ease; }
+  input[type=number] { -moz-appearance: textfield; }
+  input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  .field {
+    background: #0a1610; border: 1px solid #2e4a3a; border-radius: .6rem;
+    padding: .6rem .75rem; color: #e5e7eb; min-height: 48px; width: 100%;
+  }
+  .field:focus { outline: 2px solid #8fcf4a; outline-offset: 1px; }
+  #toast { transition: opacity .25s ease, transform .25s ease; }
+  .conc-glow { box-shadow: 0 0 0 2px rgba(34,176,122,.7), 0 0 18px rgba(34,176,122,.45); }
+</style>
+</head>
+<body class="font-sans min-h-screen">
+
+<div class="max-w-6xl mx-auto px-4 pb-28 pt-5">
+
+  <!-- ENCABEZADO -->
+  <header class="card p-4 sm:p-5 mb-5">
+    <div class="flex flex-wrap items-center justify-between gap-4">
+      <div>
+        <h1 class="font-display text-2xl sm:text-3xl font-extrabold text-gold-400 tracking-wide">🪶 Törma</h1>
+        <p class="text-ink-300 text-sm sm:text-base">Druida Nivel 4 · Círculo de la Tierra (tropical) · Aarakocra · <span class="text-ink-400">D&amp;D 5e (2024)</span></p>
+      </div>
+      <div class="flex flex-wrap gap-2 text-center">
+        <div class="bg-ink-950/70 border border-gold-600/40 rounded-xl px-3 py-2 min-w-[72px]">
+          <div class="text-[10px] uppercase tracking-widest text-ink-400">CA</div>
+          <div class="font-display text-2xl text-gold-300" id="hdrAc">15</div>
+        </div>
+        <div class="bg-ink-950/70 border border-gold-600/40 rounded-xl px-3 py-2 min-w-[72px]">
+          <div class="text-[10px] uppercase tracking-widest text-ink-400">PG</div>
+          <div class="font-display text-2xl text-crimson-400" id="hdrHp">35</div>
+        </div>
+        <div class="bg-ink-950/70 border border-gold-600/40 rounded-xl px-3 py-2">
+          <div class="text-[10px] uppercase tracking-widest text-ink-400">Velocidad</div>
+          <div class="font-display text-lg text-gold-300 leading-8" id="hdrSpeed">30 pies · vuelo 30</div>
+        </div>
+        <div class="bg-ink-950/70 border border-crimson-600/60 rounded-xl px-3 py-2 min-w-[72px]">
+          <div class="text-[10px] uppercase tracking-widest text-ink-400">Asalto</div>
+          <div class="font-display text-2xl text-white" id="hdrRound">1</div>
+        </div>
+      </div>
+    </div>
+    <p class="text-[11px] text-ink-400 mt-3">CA 15 según la hoja (armadura de cuero + escudo de madera) · Iniciativa +3 · CD de conjuros 14 · Ataque de conjuros +6</p>
+  </header>
+
+  <div class="grid gap-5 lg:grid-cols-2">
+
+    <!-- 1. ECONOMÍA DEL TURNO -->
+    <section class="card p-4 sm:p-5">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="card-title text-xl">⏱️ Economía del Turno</h2>
+        <button class="btn btn-slate px-3 text-xs" data-act="newCombat">Nuevo combate</button>
+      </div>
+      <div id="turnList" class="space-y-2"></div>
+      <button class="btn btn-crimson w-full mt-4 text-lg font-display tracking-widest py-4" data-act="nextTurn">
+        ⏭️ PASAR TURNO
+      </button>
+    </section>
+
+    <!-- 2. SALUD -->
+    <section class="card p-4 sm:p-5">
+      <h2 class="card-title text-xl mb-3">❤️ Puntos de Golpe</h2>
+      <div id="hpBox"></div>
+    </section>
+
+    <!-- 2b. FORMA SALVAJE -->
+    <section class="card p-4 sm:p-5">
+      <h2 class="card-title text-xl mb-3">🐺 Forma Salvaje</h2>
+      <div id="wildBox"></div>
+    </section>
+
+    <!-- 2c. RECURSOS + DESCANSOS -->
+    <section class="card p-4 sm:p-5">
+      <h2 class="card-title text-xl mb-3">🔋 Recursos y Descansos</h2>
+      <div id="concBox" class="mb-3"></div>
+      <div id="resList" class="space-y-3 mb-3"></div>
+      <div id="hdBox" class="mb-4"></div>
+      <div class="grid sm:grid-cols-2 gap-3">
+        <button class="btn btn-slate py-4 border-gold-600/50" data-act="shortRest">
+          <div class="font-display text-gold-300 tracking-wide">☕ DESCANSO CORTO</div>
+          <div class="text-[11px] font-normal text-ink-400">1 hora · +1 Forma Salvaje · Dados de Golpe</div>
+        </button>
+        <button class="btn btn-gold py-4" data-act="longRest">
+          <div class="font-display tracking-wide">🌙 DESCANSO LARGO</div>
+          <div class="text-[11px] font-medium opacity-80">8 horas · Restablece TODO</div>
+        </button>
+      </div>
+    </section>
+
+    <!-- 3. CONJUROS -->
+    <section class="card p-4 sm:p-5 lg:col-span-2">
+      <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+        <h2 class="card-title text-xl">✨ Conjuros</h2>
+        <div class="text-xs text-ink-400">Canalizador druídico · Sabiduría (+4)</div>
+      </div>
+      <div id="spellList" class="space-y-5"></div>
+    </section>
+
+    <!-- ATAQUES -->
+    <section class="card p-4 sm:p-5 lg:col-span-2">
+      <h2 class="card-title text-xl mb-3">🗡️ Ataques con arma</h2>
+      <div id="weaponList" class="grid gap-3 md:grid-cols-2"></div>
+    </section>
+
+    <!-- 5. CONSUMIBLES -->
+    <section class="card p-4 sm:p-5 lg:col-span-2">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="card-title text-xl">🎒 Consumibles</h2>
+        <button class="btn btn-slate px-4 text-sm" data-act="toggleEdit" id="editBtn">✏️ Editar</button>
+      </div>
+      <div id="itemList" class="grid gap-3 md:grid-cols-2"></div>
+      <div id="addItem" class="hidden mt-4 p-3 rounded-xl border border-dashed border-gold-600/50">
+        <div class="text-sm text-gold-300 font-semibold mb-2">Agregar consumible</div>
+        <div class="grid gap-2 sm:grid-cols-[2fr_1fr_2fr_auto]">
+          <input class="field" id="newName" placeholder="Nombre">
+          <input class="field" id="newMax" type="number" min="1" placeholder="Cantidad" inputmode="numeric">
+          <input class="field" id="newInfo" placeholder="Nota (alcance, área…)">
+          <button class="btn btn-gold px-4" data-act="addItem">＋ Agregar</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- FICHA -->
+    <section class="card p-4 sm:p-5 lg:col-span-2">
+      <details open>
+        <summary class="card-title text-xl cursor-pointer select-none">📜 Ficha del Personaje · Nivel 4</summary>
+        <div id="sheet" class="mt-4 space-y-5"></div>
+      </details>
+    </section>
+
+    <!-- REGISTRO -->
+    <section class="card p-4 sm:p-5 lg:col-span-2">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="card-title text-xl">📜 Registro de la batalla</h2>
+        <button class="btn btn-slate px-3 text-xs" data-act="clearLog">Limpiar</button>
+      </div>
+      <ul id="logList" class="space-y-1 text-sm max-h-64 overflow-y-auto pr-1"></ul>
+    </section>
+  </div>
+
+  <div class="text-center mt-6">
+    <button class="text-xs text-ink-400 underline underline-offset-4 hover:text-crimson-400" data-act="factoryReset">
+      Restaurar ficha a valores iniciales
+    </button>
+  </div>
+</div>
+
+<!-- MODAL DESCANSO CORTO -->
+<div id="modal" class="fixed inset-0 z-40 hidden items-end sm:items-center justify-center bg-black/70 p-4">
+  <div class="card w-full max-w-md p-5" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <h3 id="modalTitle" class="card-title text-xl mb-1">☕ Descanso Corto</h3>
+    <p class="text-xs text-ink-400 mb-4">Gasta Dados de Golpe: cada uno cura 1d8 + Mod. Con (+3).</p>
+    <div id="modalBody"></div>
+    <button class="btn btn-gold w-full mt-4" data-act="closeModal">Terminar descanso</button>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast" class="fixed left-1/2 bottom-6 z-50 -translate-x-1/2 translate-y-4 opacity-0 pointer-events-none
+     bg-ink-900 border border-gold-500 text-gold-300 font-semibold rounded-xl px-5 py-3 shadow-2xl text-center max-w-[90vw]"></div>
+
+<script>
+(() => {
+  'use strict';
+
+  const STORAGE_KEY = 'torma-tracker-v1';
+  const CON_MOD = 3;      // Constitución 16 (hoja de Quest Portal)
+  const HIT_DIE = 8;
+  const SPEED = 30;
+  const FLY = 30;
+  const BASE_AC = 15;
+  const BARK_AC = 17;     // Piel Robliza: la CA no puede ser menor que 17
+  const DRUID_LEVEL = 4;  // PG temporales al adoptar Forma Salvaje
+  const SPELL_DC = 14;
+  const SPELL_ATK = 6;
+
+  // ---------- Utilidades ----------
+  const meters = ft => (Math.round(ft * 3) / 10).toLocaleString('es-AR');
+  const fmt = ft => `${ft} pies / ${meters(ft)} m`;
+  const rollDie = sides => 1 + Math.floor(Math.random() * sides);
+  const rollMany = (n, sides) => Array.from({ length: n }, () => rollDie(sides));
+  const sum = arr => arr.reduce((a, b) => a + b, 0);
+  const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+  const uid = () => Math.random().toString(36).slice(2, 9);
+  const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+  // Formas conocidas según la hoja (velocidades del Manual del Jugador 2024)
+  const FORMS = [
+    { k: 'arana',   icon: '🕷️', name: 'Araña',  speed: 30, extra: 'trepar 30 pies' },
+    { k: 'caballo', icon: '🐎', name: 'Caballo', speed: 60, extra: '' },
+    { k: 'lobo',    icon: '🐺', name: 'Lobo',   speed: 40, extra: '' },
+    { k: 'rata',    icon: '🐀', name: 'Rata',   speed: 20, extra: '' }
+  ];
+  const findForm = k => FORMS.find(f => f.k === k);
+
+  // ---------- Estado por defecto (valores actuales de la hoja) ----------
+  const defaults = () => ({
+    hp: 35, maxHp: 35, temp: 0,
+    round: 1, moved: 0, dash: false,
+    conc: null, form: null, bark: false,
+    turn: { move: false, action: false, bonus: false, reaction: false, object: false },
+    res: {
+      slot1: { cur: 4, max: 4 },
+      slot2: { cur: 3, max: 3 },
+      wild:  { cur: 2, max: 2 },
+      insp:  { cur: 1, max: 1 },
+      hd:    { cur: 4, max: 4 }
+    },
+    items: [
+      { id: uid(), icon: '🍖', name: 'Raciones', cur: 9, max: 9, info: '1 por día de viaje' },
+      { id: uid(), icon: '🔥', name: 'Antorchas', cur: 10, max: 10, info: `Luz brillante ${fmt(20)} + tenue ${fmt(20)} · 1 hora` }
+    ],
+    log: []
+  });
+
+  const RESOURCES = {
+    slot1: { icon: '🍃', name: 'Espacios de conjuro (nivel 1)', sub: 'Se recuperan en Descanso Largo' },
+    slot2: { icon: '🌿', name: 'Espacios de conjuro (nivel 2)', sub: 'Se recuperan en Descanso Largo' },
+    wild:  { icon: '🐺', name: 'Forma Salvaje', sub: 'También para Ayuda de la Tierra y Compañero Salvaje · +1 en Descanso Corto' },
+    insp:  { icon: '🌟', name: 'Inspiración Heroica', sub: 'Repetir cualquier d20' }
+  };
+
+  // ---------- Ficha (Nivel 4 · Quest Portal) ----------
+  const PROF = 2;
+  const abilityMod = score => Math.floor((score - 10) / 2);
+  const signed = n => (n >= 0 ? `+${n}` : `${n}`);
+
+  const ABILITIES = [
+    { k: 'FUE', name: 'Fuerza',       score: 14, save: false },
+    { k: 'DES', name: 'Destreza',     score: 16, save: false },
+    { k: 'CON', name: 'Constitución', score: 16, save: false },
+    { k: 'INT', name: 'Inteligencia', score: 12, save: true },
+    { k: 'SAB', name: 'Sabiduría',    score: 18, save: true },
+    { k: 'CAR', name: 'Carisma',      score: 14, save: false }
+  ];
+  const MOD = Object.fromEntries(ABILITIES.map(a => [a.k, abilityMod(a.score)]));
+
+  // Valores tal como figuran en la hoja (Arcanos y Naturaleza incluyen el bono de Naturalista)
+  const SKILLS = [
+    ['Acrobacias', 'DES'], ['Arcanos', 'INT', 5], ['Atletismo', 'FUE'], ['Engaño', 'CAR'],
+    ['Historia', 'INT'], ['Interpretación', 'CAR'], ['Intimidación', 'CAR'], ['Investigación', 'INT'],
+    ['Juego de Manos', 'DES'], ['Medicina', 'SAB', 6], ['Naturaleza', 'INT', 5], ['Percepción', 'SAB', 6],
+    ['Perspicacia', 'SAB'], ['Persuasión', 'CAR'], ['Religión', 'INT', 3], ['Sigilo', 'DES'],
+    ['Supervivencia', 'SAB'], ['Trato con Animales', 'SAB', 6]
+  ].map(([name, ab, sheet]) => ({ name, ab, prof: sheet !== undefined, mod: sheet ?? MOD[ab] }));
+  const skill = name => SKILLS.find(s => s.name === name);
+
+  const WEAPONS = [
+    { name: 'Cimitarra', icon: '⚔️', atk: MOD.DES + PROF, dice: [1, 6], dmg: MOD.DES, type: 'cortante', range: fmt(5), note: 'Sutil, ligera' },
+    { name: 'Garras (Talons)', icon: '🦅', atk: MOD.FUE + PROF, dice: [1, 6], dmg: MOD.FUE, type: 'cortante', range: fmt(5), note: 'Ataque sin armas de aarakocra' }
+  ];
+
+  // time: A = Acción, AA = Acción Adicional, R = Reacción
+  const SPELLS = [
+    { lvl: 0, name: 'Voluta Estelar', en: 'Starry Wisp', time: 'A', range: fmt(60), atk: true, dmg: { n: 1, d: 8, b: 0, type: 'radiante' }, desc: 'Si impacta, el objetivo no puede volverse invisible y emite luz tenue hasta el final de tu próximo turno.' },
+    { lvl: 0, name: 'Rociada Venenosa', en: 'Poison Spray', time: 'A', range: fmt(30), atk: true, dmg: { n: 1, d: 12, b: 0, type: 'veneno' }, desc: 'Ataque de conjuro a distancia.' },
+    { lvl: 0, name: 'Crear Llama', en: 'Produce Flame', time: 'A', range: fmt(60), atk: true, dmg: { n: 1, d: 8, b: 0, type: 'fuego' }, desc: 'Llama en la mano (luz 20 pies, 10 minutos). Lanzarla es un ataque de conjuro a distancia.' },
+    { lvl: 0, name: 'Salpicadura Ácida', en: 'Acid Splash · Tierra tropical', time: 'A', range: fmt(60), save: 'Des', dmg: { n: 1, d: 6, b: 0, type: 'ácido' }, desc: 'Esfera de 5 pies: cada criatura hace la salvación.' },
+    { lvl: 0, name: 'Resistencia', en: 'Resistance', time: 'A', range: 'Toque', conc: true, desc: 'Elegís un tipo de daño: el objetivo reduce 1d4 ese daño una vez por turno (1 minuto).' },
+
+    { lvl: 1, name: 'Curar Heridas', en: 'Cure Wounds', time: 'A', range: 'Toque', heal: { n: 2, d: 8, b: 4 }, up: { n: 2, d: 8 }, desc: 'Recupera 2d8 + 4 PG (+2d8 con espacio de nivel 2).' },
+    { lvl: 1, name: 'Ola Atronadora', en: 'Thunderwave', time: 'A', range: 'Cubo de 15 pies (4,5 m)', save: 'Con', half: true, dmg: { n: 2, d: 8, b: 0, type: 'trueno' }, up: { n: 1, d: 8 }, desc: 'Empuja 10 pies si falla.' },
+    { lvl: 1, name: 'Rayo Nauseabundo', en: 'Ray of Sickness · Tierra tropical', time: 'A', range: fmt(60), atk: true, dmg: { n: 2, d: 8, b: 0, type: 'veneno' }, up: { n: 1, d: 8 }, desc: 'Si impacta: envenenado hasta el final de tu próximo turno.' },
+    { lvl: 1, name: 'Hechizar Persona', en: 'Charm Person', time: 'A', range: fmt(30), save: 'Sab', desc: 'Hechizado 1 hora (ventaja en la TS si lo estás atacando).' },
+    { lvl: 1, name: 'Hablar con Animales', en: 'Speak with Animals · Ritual', time: 'A', range: 'Personal', ritual: true, desc: 'Entendés y hablás con bestias durante 10 minutos.' },
+    { lvl: 1, name: 'Crear o Destruir Agua', en: 'Create or Destroy Water', time: 'A', range: fmt(30), desc: 'Hasta 10 galones de agua en un cubo de 30 pies.' },
+
+    { lvl: 2, name: 'Piel Robliza', en: 'Barkskin', time: 'AA', range: 'Toque', bark: true, desc: `La CA del objetivo no puede ser menor que ${BARK_AC} durante 1 hora.` },
+    { lvl: 2, name: 'Esfera de Llamas', en: 'Flaming Sphere', time: 'A', range: fmt(60), conc: true, save: 'Des', half: true, dmg: { n: 2, d: 6, b: 0, type: 'fuego' }, desc: 'Acción Adicional: movés la esfera 30 pies y repetís el daño.' },
+    { lvl: 2, name: 'Telaraña', en: 'Web · Tierra tropical', time: 'A', range: fmt(60), conc: true, save: 'Des', desc: 'Cubo de 20 pies: apresado si falla. Quemada: 2d4 de fuego.' },
+    { lvl: 2, name: 'Crecimiento Espinoso', en: 'Spike Growth', time: 'A', range: fmt(150), conc: true, dmg: { n: 2, d: 4, b: 0, type: 'perforante' }, desc: 'Radio de 20 pies: 2d4 por cada 5 pies que se mueva dentro (10 minutos).' }
+  ];
+
+  const TIME_LABEL = { A: 'Acción', AA: 'Acción Adicional', R: 'Reacción' };
+  const TIME_SLOT = { A: 'action', AA: 'bonus', R: 'reaction' };
+
+  const FEATURES = [
+    ['Orden Primigenia: Naturalista', `Truco extra y sumás Sab a Arcanos y Naturaleza.`],
+    ['Forma Salvaje', `2 usos: Acción Adicional para transformarte (hasta 2 horas). Ganás ${DRUID_LEVEL} PG temporales. Recuperás 1 uso en descanso corto y todos en largo.`],
+    ['Compañero Salvaje', 'Gastás un uso de Forma Salvaje o un espacio para lanzar Encontrar Familiar sin componentes.'],
+    ['Círculo de la Tierra (tropical)', 'Siempre preparados: Salpicadura Ácida, Rayo Nauseabundo y Telaraña.'],
+    ['Ayuda de la Tierra', `Acción, 1 uso de Forma Salvaje: esfera de 10 pies a ${fmt(60)}; TS Con CD ${SPELL_DC} o 2d6 necrótico (mitad si supera), y una criatura en la zona recupera 2d6 PG.`],
+    ['Vuelo', `Velocidad de vuelo ${FLY} pies (sin armadura media ni pesada).`],
+    ['Garras', '1d6 + Fue cortante como ataque sin armas.']
+  ];
+
+  const TURN = [
+    { k: 'move',     icon: '🦶', title: 'Movimiento',             desc: `Hasta ${fmt(SPEED)} · vuelo ${FLY} pies` },
+    { k: 'action',   icon: '✨', title: 'Acción Principal',       desc: 'Lanzar conjuro · Ayuda de la Tierra · Atacar · Correr · Esquivar · Ayudar' },
+    { k: 'bonus',    icon: '🐺', title: 'Acción Adicional',       desc: 'Forma Salvaje (entrar o salir) · Piel Robliza · mover Esfera de Llamas' },
+    { k: 'reaction', icon: '🛡️', title: 'Reacción',               desc: `Ataque de oportunidad (${fmt(5)})` },
+    { k: 'object',   icon: '🗝️', title: 'Interacción con Objeto', desc: 'Sacar el canalizador, abrir una puerta, recoger algo…' }
+  ];
+
+  // ---------- Persistencia ----------
+  function load() {
+    const base = defaults();
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return base;
+      const saved = JSON.parse(raw);
+      return {
+        ...base, ...saved,
+        turn: { ...base.turn, ...saved.turn },
+        res: Object.fromEntries(Object.keys(base.res).map(k => [k, { ...base.res[k], ...(saved.res || {})[k] }])),
+        items: Array.isArray(saved.items) ? saved.items : base.items,
+        log: Array.isArray(saved.log) ? saved.log : []
+      };
+    } catch { return base; }
+  }
+
+  function save() {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch { /* sin almacenamiento */ }
+  }
+
+  let state = load();
+  const ui = { editing: false };
+
+  // ---------- Feedback ----------
+  let toastTimer;
+  function toast(msg) {
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.style.opacity = '1';
+    el.style.transform = 'translate(-50%, 0)';
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => {
+      el.style.opacity = '0';
+      el.style.transform = 'translate(-50%, 1rem)';
+    }, 3200);
+    if (navigator.vibrate) navigator.vibrate(30);
+  }
+
+  function log(text) {
+    const time = new Date().toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
+    state.log.unshift({ r: state.round, t: text, time });
+    state.log = state.log.slice(0, 60);
+  }
+
+  // ---------- Lógica de PG ----------
+  function heal(amount, source) {
+    const before = state.hp;
+    state.hp = clamp(state.hp + amount, 0, state.maxHp);
+    const gained = state.hp - before;
+    log(`${source}: +${gained} PG (${state.hp}/${state.maxHp})`);
+    return gained;
+  }
+
+  function damage(amount, source = 'Daño') {
+    let rest = amount;
+    if (state.temp > 0) {
+      const absorbed = Math.min(state.temp, rest);
+      state.temp -= absorbed;
+      rest -= absorbed;
+    }
+    state.hp = clamp(state.hp - rest, 0, state.maxHp);
+    log(`${source}: −${amount} PG (${state.hp}/${state.maxHp}${state.temp ? `, ${state.temp} temp.` : ''})`);
+    if (state.hp === 0) {
+      if (state.conc) { log(`🔮 Concentración perdida: ${state.conc}`); state.conc = null; }
+      if (state.form) { log(`🐺 Forma Salvaje terminada (${findForm(state.form).name})`); state.form = null; }
+      toast('💀 ¡Törma cae inconsciente! Tiradas de salvación contra muerte.');
+    } else if (state.conc) {
+      // Reglas 2024: CD = 10 o la mitad del daño, lo que sea mayor (máx. 30)
+      const dc = Math.min(30, Math.max(10, Math.floor(amount / 2)));
+      log(`🔮 TS de Constitución CD ${dc} para mantener ${state.conc}`);
+      toast(`🔮 Concentración: TS Con CD ${dc} para mantener ${state.conc}`);
+    }
+  }
+
+  // ---------- Movimiento ----------
+  const baseSpeed = () => state.form ? findForm(state.form).speed : SPEED;
+  const moveBudget = () => baseSpeed() * (state.dash ? 2 : 1);
+
+  function setMoved(ft) {
+    state.moved = clamp(ft, 0, moveBudget());
+    state.turn.move = state.moved >= moveBudget();
+  }
+
+  // ---------- Render ----------
+  function renderHeader() {
+    document.getElementById('hdrHp').textContent = state.hp;
+    document.getElementById('hdrRound').textContent = state.round;
+    document.getElementById('hdrAc').textContent = state.bark ? Math.max(BASE_AC, BARK_AC) : BASE_AC;
+    const form = state.form && findForm(state.form);
+    document.getElementById('hdrSpeed').textContent = form
+      ? `${form.icon} ${form.speed} pies${form.extra ? ' · ' + form.extra : ''}`
+      : `${SPEED} pies · vuelo ${FLY}`;
+  }
+
+  function renderTurn() {
+    const budget = moveBudget();
+    const rows = TURN.map(t => {
+      const done = state.turn[t.k];
+      const steps = Array.from({ length: budget / 5 }, (_, i) => {
+        const ft = (i + 1) * 5;
+        const on = state.moved >= ft;
+        const dashStep = ft > baseSpeed();
+        return `
+          <button class="rounded-lg border-2 min-h-[48px] flex flex-col items-center justify-center leading-tight transition
+                         ${on ? (dashStep ? 'bg-crimson-600 border-crimson-400 text-white' : 'bg-gold-500 border-gold-300 text-ink-950')
+                              : (dashStep ? 'border-crimson-700/70 text-ink-400' : 'border-gold-600/60 text-ink-300')}"
+                  data-act="moveTo" data-ft="${ft}" aria-label="Moverse hasta ${fmt(ft)}" aria-pressed="${on}">
+            <span class="text-xs font-bold">${ft}</span>
+            <span class="text-[10px] opacity-80">${meters(ft)} m</span>
+          </button>`;
+      }).join('');
+      const extraMove = t.k === 'move' ? `
+        <div class="mt-3 space-y-2" data-act="noop">
+          <div class="flex items-center justify-between text-xs">
+            <span class="text-gold-300 font-semibold">Usado: ${fmt(state.moved)}</span>
+            <span class="text-ink-300">Restan: ${fmt(budget - state.moved)}</span>
+          </div>
+          <div class="grid grid-cols-6 gap-1.5">${steps}</div>
+          <div class="grid grid-cols-[auto_1fr_auto] gap-2">
+            <button class="btn btn-slate px-4 min-h-[40px]" data-act="move" data-v="-5">−5</button>
+            <button class="btn min-h-[40px] text-sm ${state.dash ? 'btn-crimson' : 'btn-slate'}" data-act="toggleDash">
+              🏃 Correr ${state.dash ? `(activo · ${fmt(baseSpeed() * 2)})` : '(×2 movimiento)'}
+            </button>
+            <button class="btn btn-slate px-4 min-h-[40px]" data-act="move" data-v="5">+5</button>
+          </div>
+        </div>` : '';
+      return `
+        <div class="turn-row ${done ? 'done' : ''} rounded-xl border border-ink-600 bg-ink-950/50 p-3 cursor-pointer"
+             data-act="toggle" data-k="${t.k}" role="checkbox" aria-checked="${done}" tabindex="0">
+          <div class="flex items-center gap-3">
+            <div class="check">${done ? '✓' : ''}</div>
+            <div class="flex-1 min-w-0">
+              <div class="turn-title font-semibold text-base">${t.icon} ${t.title}</div>
+              <div class="text-xs text-ink-400">${t.desc}</div>
+            </div>
+          </div>
+          ${extraMove}
+        </div>`;
+    });
+    document.getElementById('turnList').innerHTML = rows.join('');
+  }
+
+  function renderHp() {
+    const pct = state.maxHp ? state.hp / state.maxHp * 100 : 0;
+    const color = pct > 50 ? '#2f855a' : pct > 25 ? '#8fcf4a' : '#c0262d';
+    const status = state.hp === 0 ? '💀 Inconsciente' : pct <= 50 ? '🩸 Malherida' : '🛡️ En pie';
+    document.getElementById('hpBox').innerHTML = `
+      <div class="flex items-end justify-between mb-2">
+        <div>
+          <span class="font-display text-5xl font-extrabold text-white">${state.hp}</span>
+          <span class="text-2xl text-ink-400">/ ${state.maxHp}</span>
+          ${state.temp ? `<span class="ml-2 text-leaf-300 font-semibold">+${state.temp} temp.</span>` : ''}
+        </div>
+        <span class="text-sm text-ink-300">${status}</span>
+      </div>
+      <div class="h-4 bg-ink-950 rounded-full overflow-hidden border border-ink-600 mb-4">
+        <div class="hp-bar h-full" style="width:${pct}%;background:${color}"></div>
+      </div>
+      <div class="grid grid-cols-4 gap-2 mb-3">
+        <button class="btn btn-crimson text-lg" data-act="hp" data-v="-5">−5</button>
+        <button class="btn btn-crimson text-lg" data-act="hp" data-v="-1">−1</button>
+        <button class="btn btn-heal text-lg" data-act="hp" data-v="1">+1</button>
+        <button class="btn btn-heal text-lg" data-act="hp" data-v="5">+5</button>
+      </div>
+      <div class="grid grid-cols-[1fr_auto_auto] gap-2">
+        <input id="hpCustom" class="field text-center text-lg" type="number" min="0" inputmode="numeric" placeholder="Cantidad">
+        <button class="btn btn-crimson px-4" data-act="hpCustom" data-mode="dmg">🗡️ Daño</button>
+        <button class="btn btn-heal px-4" data-act="hpCustom" data-mode="heal">✨ Curar</button>
+      </div>
+      <div class="grid grid-cols-[1fr_auto] gap-2 mt-2">
+        <input id="tempInput" class="field text-center" type="number" min="0" inputmode="numeric" placeholder="PG temporales">
+        <button class="btn btn-slate px-4" data-act="setTemp">Fijar temp.</button>
+      </div>
+      ${state.bark ? `
+        <div class="mt-2 rounded-xl border border-bark-400/60 bg-bark-900/50 p-2 flex items-center justify-between gap-2 text-sm">
+          <span>🌳 Piel Robliza activa: CA ${Math.max(BASE_AC, BARK_AC)}</span>
+          <button class="btn btn-slate px-3 min-h-[36px] text-xs" data-act="endBark">Terminar</button>
+        </div>` : ''}`;
+  }
+
+  function pips(cur, max) {
+    return Array.from({ length: max }, (_, i) => `<span class="pip ${i < cur ? 'on' : ''}"></span>`).join('');
+  }
+
+  function renderWild() {
+    const uses = state.res.wild;
+    const form = state.form && findForm(state.form);
+    const forms = FORMS.map(f => `
+      <button class="btn ${state.form === f.k ? 'btn-leaf' : 'btn-slate'} py-2" data-act="wildShape" data-k="${f.k}" ${state.form || uses.cur === 0 ? 'disabled' : ''}>
+        <div class="text-2xl leading-none">${f.icon}</div>
+        <div class="text-sm">${f.name}</div>
+        <div class="text-[10px] font-normal opacity-80">${f.speed} pies${f.extra ? ' · ' + f.extra : ''}</div>
+      </button>`).join('');
+    document.getElementById('wildBox').innerHTML = `
+      <div class="flex items-center justify-between gap-3 mb-3">
+        <div>
+          <div class="text-xs text-ink-400">Usos de Forma Salvaje</div>
+          <div class="flex gap-1.5 mt-1">${pips(uses.cur, uses.max)}</div>
+        </div>
+        <div class="font-display text-2xl text-gold-300">${uses.cur}<span class="text-ink-400 text-base">/${uses.max}</span></div>
+      </div>
+      ${form ? `
+        <div class="rounded-xl border border-leaf-500 bg-leaf-900/40 p-3 mb-3">
+          <div class="text-[10px] uppercase tracking-widest text-leaf-300">Transformada en</div>
+          <div class="font-display text-xl text-white">${form.icon} ${form.name}</div>
+          <div class="text-xs text-ink-300">Usá la CA, velocidad y ataques de la bestia. Conservás tus PG; no podés lanzar conjuros.</div>
+          <button class="btn btn-slate w-full mt-2 text-sm" data-act="leaveShape">↩️ Volver a la forma normal (Acción Adicional)</button>
+        </div>` : ''}
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">${forms}</div>
+      <p class="text-[11px] text-ink-400 mt-2">Al transformarte ganás ${DRUID_LEVEL} PG temporales. Dura hasta 2 horas.</p>
+      <div class="grid sm:grid-cols-2 gap-2 mt-3">
+        <button class="btn btn-bark py-2" data-act="landsAid" ${uses.cur === 0 ? 'disabled' : ''}>
+          <div>🌱 Ayuda de la Tierra</div>
+          <div class="text-[11px] font-normal opacity-80">2d6 necrótico (TS Con ${SPELL_DC}) + cura 2d6</div>
+        </button>
+        <button class="btn btn-slate py-2" data-act="companion" ${uses.cur === 0 ? 'disabled' : ''}>
+          <div>🦉 Compañero Salvaje</div>
+          <div class="text-[11px] font-normal opacity-80">Encontrar Familiar con 1 uso</div>
+        </button>
+      </div>`;
+  }
+
+  function renderConc() {
+    const box = document.getElementById('concBox');
+    if (!state.conc) {
+      box.innerHTML = '<div class="rounded-xl border border-dashed border-ink-600 p-3 text-sm text-ink-400">🔮 Sin concentración activa</div>';
+      return;
+    }
+    box.innerHTML = `
+      <div class="rounded-xl border border-leaf-500 bg-leaf-900/40 p-3 conc-glow">
+        <div class="flex items-center justify-between gap-3">
+          <div class="min-w-0">
+            <div class="text-[10px] uppercase tracking-widest text-leaf-300">Concentrada en</div>
+            <div class="font-display text-lg text-white truncate">${esc(state.conc)}</div>
+          </div>
+          <button class="btn btn-slate px-3 text-xs" data-act="dropConc">Terminar</button>
+        </div>
+        <div class="grid grid-cols-2 gap-2 mt-2">
+          <button class="btn btn-leaf text-sm" data-act="concSave">🎲 TS Con (${signed(MOD.CON)})</button>
+          ${state.conc === 'Esfera de Llamas' ? '<button class="btn btn-crimson text-sm" data-act="moveSphere">🔥 Mover esfera (AA)</button>' : '<span></span>'}
+        </div>
+      </div>`;
+  }
+
+  function renderResources() {
+    document.getElementById('resList').innerHTML = Object.entries(RESOURCES).filter(([k]) => k !== 'wild').map(([k, meta]) => {
+      const r = state.res[k];
+      return `
+        <div class="rounded-xl border border-ink-600 bg-ink-950/50 p-3">
+          <div class="flex items-center justify-between gap-3">
+            <div class="min-w-0">
+              <div class="font-semibold">${meta.icon} ${meta.name}</div>
+              <div class="text-xs text-ink-400">${meta.sub}</div>
+            </div>
+            <div class="font-display text-2xl text-gold-300 whitespace-nowrap">${r.cur}<span class="text-ink-400 text-base">/${r.max}</span></div>
+          </div>
+          <div class="flex gap-1.5 my-2">${pips(r.cur, r.max)}</div>
+          <div class="grid grid-cols-[1fr_auto] gap-2">
+            <button class="btn btn-crimson" data-act="spend" data-r="${k}" ${r.cur === 0 ? 'disabled' : ''}>Gastar 1</button>
+            <button class="btn btn-slate px-5" data-act="inc" data-r="${k}" ${r.cur >= r.max ? 'disabled' : ''}>＋1</button>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  function renderHitDice() {
+    const hd = state.res.hd;
+    document.getElementById('hdBox').innerHTML = `
+      <div class="rounded-xl border border-ink-600 bg-ink-950/50 p-3 flex items-center justify-between gap-3">
+        <div>
+          <div class="font-semibold">❤️ Dados de Golpe</div>
+          <div class="text-xs text-ink-400">d${HIT_DIE} + ${CON_MOD} (Con) · se recuperan todos en Descanso Largo</div>
+          <div class="flex gap-1.5 mt-2">${pips(hd.cur, hd.max)}</div>
+        </div>
+        <div class="font-display text-2xl text-gold-300">${hd.cur}<span class="text-ink-400 text-base">/${hd.max}</span></div>
+      </div>`;
+  }
+
+  const diceText = d => `${d.n}d${d.d}${d.b ? ` + ${d.b}` : ''}`;
+
+  function renderSpells() {
+    const s1 = state.res.slot1, s2 = state.res.slot2;
+    const shaped = !!state.form;
+    const groups = [
+      { lvl: 0, title: 'Trucos', sub: 'A voluntad' },
+      { lvl: 1, title: 'Nivel 1', sub: `Espacios ${s1.cur}/${s1.max}` },
+      { lvl: 2, title: 'Nivel 2', sub: `Espacios ${s2.cur}/${s2.max}` }
+    ];
+    document.getElementById('spellList').innerHTML = `
+      ${shaped ? '<p class="text-sm text-crimson-400 font-semibold">🐺 En Forma Salvaje no podés lanzar conjuros (sí mantener la concentración).</p>' : ''}
+      ${groups.map(g => {
+        const cards = SPELLS.map((s, i) => ({ s, i })).filter(({ s }) => s.lvl === g.lvl).map(({ s, i }) => {
+          const tags = [
+            `<span class="px-2 py-0.5 rounded-full bg-ink-700 text-ink-300">${TIME_LABEL[s.time]}</span>`,
+            s.conc ? '<span class="px-2 py-0.5 rounded-full bg-leaf-900 text-leaf-300">Concentración</span>' : '',
+            s.ritual ? '<span class="px-2 py-0.5 rounded-full bg-ink-700 text-gold-300">Ritual</span>' : '',
+            s.atk ? `<span class="px-2 py-0.5 rounded-full bg-gold-900 text-gold-300">Ataque ${signed(SPELL_ATK)}</span>` : '',
+            s.save ? `<span class="px-2 py-0.5 rounded-full bg-crimson-900 text-crimson-400">TS ${s.save} CD ${SPELL_DC}</span>` : ''
+          ].join(' ');
+          const dmgLine = s.dmg ? `<div class="text-xs text-gold-300 mt-1">Daño: ${diceText(s.dmg)} ${s.dmg.type}${s.half ? ' · mitad si supera' : ''}</div>`
+            : s.heal ? `<div class="text-xs text-emerald-400 mt-1">Curación: ${diceText(s.heal)}</div>` : '';
+          let buttons;
+          if (s.lvl === 0) {
+            buttons = `<button class="btn btn-gold w-full text-sm" data-act="cast" data-i="${i}" ${shaped ? 'disabled' : ''}>✨ Lanzar</button>`;
+          } else {
+            const slot = s.lvl === 1 ? s1 : s2;
+            buttons = `<button class="btn btn-leaf w-full text-sm" data-act="cast" data-i="${i}" data-slot="${s.lvl}" ${slot.cur === 0 || shaped ? 'disabled' : ''}>✨ Lanzar (nivel ${s.lvl})</button>`;
+            if (s.lvl === 1) {
+              buttons += `<button class="btn btn-slate w-full text-sm mt-2" data-act="cast" data-i="${i}" data-slot="2" ${s2.cur === 0 || shaped ? 'disabled' : ''}>⬆️ Con espacio de nivel 2${s.up ? ` (+${s.up.n}d${s.up.d})` : ''}</button>`;
+            }
+          }
+          if (s.ritual) buttons += `<button class="btn btn-slate w-full text-sm mt-2" data-act="cast" data-i="${i}" data-ritual="1" ${shaped ? 'disabled' : ''}>📖 Como ritual (+10 minutos)</button>`;
+          if (s.heal) buttons += `<button class="btn btn-heal w-full text-sm mt-2" data-act="cast" data-i="${i}" data-slot="1" data-self="1" ${s1.cur === 0 || shaped ? 'disabled' : ''}>🪶 Curarme a mí (nivel 1)</button>`;
+          return `
+            <div class="rounded-xl border ${state.conc === s.name ? 'border-leaf-500 conc-glow' : 'border-ink-600'} bg-ink-950/50 p-3 flex flex-col">
+              <div class="font-semibold">${esc(s.name)} <span class="text-[11px] text-ink-400 font-normal">${esc(s.en)}</span></div>
+              <div class="text-xs text-ink-400">${s.range}</div>
+              <div class="flex flex-wrap gap-1 text-[10px] mt-1.5">${tags}</div>
+              ${dmgLine}
+              <div class="text-xs text-ink-300 mt-1 flex-1">${s.desc}</div>
+              <div class="mt-2">${buttons}</div>
+            </div>`;
+        }).join('');
+        return `
+          <div>
+            <h3 class="text-sm uppercase tracking-widest text-ink-400 mb-2">${g.title} <span class="normal-case tracking-normal text-[11px]">· ${g.sub}</span></h3>
+            <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">${cards}</div>
+          </div>`;
+      }).join('')}`;
+  }
+
+  function renderWeapons() {
+    document.getElementById('weaponList').innerHTML = WEAPONS.map((w, i) => `
+      <div class="rounded-xl border border-ink-600 bg-ink-950/50 p-3">
+        <div class="flex items-start justify-between gap-3">
+          <div class="min-w-0">
+            <div class="font-semibold">${w.icon} ${w.name}</div>
+            <div class="text-xs text-ink-400">${w.range} · ${w.type}</div>
+          </div>
+          <div class="text-right whitespace-nowrap">
+            <div class="font-display text-gold-300">${signed(w.atk)}</div>
+            <div class="text-xs text-ink-300">${w.dice[0]}d${w.dice[1]} + ${w.dmg}</div>
+          </div>
+        </div>
+        <div class="text-xs text-ink-400">${w.note}</div>
+        <button class="btn btn-crimson w-full mt-2" data-act="rollWeapon" data-i="${i}">🎲 Atacar</button>
+      </div>`).join('');
+  }
+
+  function renderItems() {
+    document.getElementById('editBtn').textContent = ui.editing ? '✅ Listo' : '✏️ Editar';
+    document.getElementById('addItem').classList.toggle('hidden', !ui.editing);
+    const list = document.getElementById('itemList');
+    if (!state.items.length) {
+      list.innerHTML = '<p class="text-ink-400 text-sm">No hay consumibles. Pulsa “Editar” para agregar.</p>';
+      return;
+    }
+    list.innerHTML = state.items.map(it => {
+      if (ui.editing) {
+        return `
+          <div class="rounded-xl border border-gold-600/40 bg-ink-950/60 p-3 space-y-2">
+            <div class="grid grid-cols-[3.5rem_1fr] gap-2">
+              <input class="field text-center" data-item="${it.id}" data-field="icon" value="${esc(it.icon)}" aria-label="Ícono">
+              <input class="field" data-item="${it.id}" data-field="name" value="${esc(it.name)}" aria-label="Nombre">
+            </div>
+            <input class="field text-sm" data-item="${it.id}" data-field="info" value="${esc(it.info)}" placeholder="Nota" aria-label="Nota">
+            <div class="grid grid-cols-[1fr_1fr_auto] gap-2 items-center">
+              <label class="text-xs text-ink-400">Actual<input class="field mt-1" type="number" min="0" inputmode="numeric" data-item="${it.id}" data-field="cur" value="${it.cur}"></label>
+              <label class="text-xs text-ink-400">Máximo<input class="field mt-1" type="number" min="1" inputmode="numeric" data-item="${it.id}" data-field="max" value="${it.max}"></label>
+              <button class="btn btn-crimson px-4 self-end" data-act="delItem" data-id="${it.id}" aria-label="Eliminar">🗑️</button>
+            </div>
+          </div>`;
+      }
+      const pct = it.max ? it.cur / it.max * 100 : 0;
+      return `
+        <div class="rounded-xl border border-ink-600 bg-ink-950/50 p-3">
+          <div class="flex items-start justify-between gap-3">
+            <div class="min-w-0">
+              <div class="font-semibold">${esc(it.icon)} ${esc(it.name)}</div>
+              <div class="text-xs text-ink-400">${esc(it.info)}</div>
+            </div>
+            <div class="font-display text-2xl whitespace-nowrap ${it.cur === 0 ? 'text-crimson-400' : 'text-gold-300'}">${it.cur}<span class="text-ink-400 text-base">/${it.max}</span></div>
+          </div>
+          <div class="h-1.5 bg-ink-950 rounded-full my-2 overflow-hidden"><div class="h-full bg-gold-500" style="width:${pct}%"></div></div>
+          <div class="grid grid-cols-[1fr_auto_auto] gap-2">
+            <button class="btn btn-crimson" data-act="useItem" data-id="${it.id}" ${it.cur === 0 ? 'disabled' : ''}>−1 Uso rápido</button>
+            <button class="btn btn-slate px-4" data-act="itemInc" data-id="${it.id}" ${it.cur >= it.max ? 'disabled' : ''}>＋1</button>
+            <button class="btn btn-slate px-3 text-xs" data-act="itemRefill" data-id="${it.id}" title="Rellenar">↻</button>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  function renderSheet() {
+    const stat = (label, value) => `
+      <div class="bg-ink-950/60 border border-ink-600 rounded-xl px-3 py-2 text-center">
+        <div class="text-[10px] uppercase tracking-widest text-ink-400">${label}</div>
+        <div class="font-display text-lg text-gold-300">${value}</div>
+      </div>`;
+    const abilities = ABILITIES.map(a => {
+      const m = MOD[a.k];
+      const save = m + (a.save ? PROF : 0);
+      return `
+        <div class="bg-ink-950/60 border ${a.save ? 'border-gold-500/70' : 'border-ink-600'} rounded-xl p-2 text-center">
+          <div class="text-[10px] uppercase tracking-widest text-ink-400">${a.name}</div>
+          <div class="font-display text-2xl text-white">${signed(m)}</div>
+          <div class="text-xs text-ink-400 mb-1">${a.score}</div>
+          <div class="grid grid-cols-2 gap-1">
+            <button class="btn btn-slate text-[11px] min-h-[36px]" data-act="rollCheck" data-label="Prueba de ${a.name}" data-mod="${m}">Prueba</button>
+            <button class="btn ${a.save ? 'btn-gold' : 'btn-slate'} text-[11px] min-h-[36px]" data-act="rollCheck" data-label="Salvación de ${a.name}" data-mod="${save}">TS ${signed(save)}</button>
+          </div>
+        </div>`;
+    }).join('');
+    const skills = SKILLS.map(s => `
+      <button class="flex items-center justify-between gap-2 rounded-lg border ${s.prof ? 'border-gold-500/60 bg-gold-900/30' : 'border-ink-700 bg-ink-950/40'} px-3 py-2 min-h-[44px] text-left hover:border-gold-400"
+              data-act="rollCheck" data-label="${s.name}" data-mod="${s.mod}">
+        <span class="text-sm">${s.prof ? '◆' : '◇'} ${s.name} <span class="text-[10px] text-ink-400">${s.ab}</span></span>
+        <span class="font-display ${s.prof ? 'text-gold-300' : 'text-ink-300'}">${signed(s.mod)}</span>
+      </button>`).join('');
+    const features = FEATURES.map(([t, d]) => `
+      <li class="text-sm"><span class="text-gold-300 font-semibold">${t}:</span> <span class="text-ink-300">${d}</span></li>`).join('');
+
+    document.getElementById('sheet').innerHTML = `
+      <div class="grid grid-cols-3 sm:grid-cols-6 gap-2">
+        ${stat('Competencia', signed(PROF))}
+        ${stat('Iniciativa', signed(MOD.DES))}
+        ${stat('CA', `${BASE_AC}`)}
+        ${stat('Percepción pasiva', 10 + skill('Percepción').mod)}
+        ${stat('CD conjuros', SPELL_DC)}
+        ${stat('Dados de Golpe', `4d${HIT_DIE}`)}
+      </div>
+      <div>
+        <h3 class="text-sm uppercase tracking-widest text-ink-400 mb-2">Características y salvaciones</h3>
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">${abilities}</div>
+      </div>
+      <div>
+        <h3 class="text-sm uppercase tracking-widest text-ink-400 mb-2">Habilidades <span class="normal-case tracking-normal">(◆ competente)</span></h3>
+        <div class="grid gap-1.5 sm:grid-cols-2 lg:grid-cols-3">${skills}</div>
+      </div>
+      <div>
+        <h3 class="text-sm uppercase tracking-widest text-ink-400 mb-2">Rasgos</h3>
+        <ul class="space-y-1.5">${features}</ul>
+      </div>
+      <div class="text-xs text-ink-400 space-y-1">
+        <div><span class="text-gold-400">Competencias:</span> armaduras ligeras y medias, escudos; cimitarra, bastón, daga, garrote, hoz, honda, jabalina, maza, lanza, dardos.</div>
+        <div><span class="text-gold-400">Herramientas:</span> útiles de herborista.</div>
+        <div><span class="text-gold-400">Idiomas:</span> Común, Druídico, Orco.</div>
+      </div>`;
+  }
+
+  function renderLog() {
+    const el = document.getElementById('logList');
+    el.innerHTML = state.log.length
+      ? state.log.map(l => `
+          <li class="flex gap-2 border-b border-ink-700/60 pb-1">
+            <span class="text-ink-400 text-xs whitespace-nowrap pt-0.5">${esc(l.time)} · A${l.r}</span>
+            <span>${esc(l.t)}</span>
+          </li>`).join('')
+      : '<li class="text-ink-400">Aún no hay eventos.</li>';
+  }
+
+  function renderModal() {
+    const hd = state.res.hd;
+    document.getElementById('modalBody').innerHTML = `
+      <div class="flex items-center justify-between rounded-xl bg-ink-950/60 border border-ink-600 p-3 mb-3">
+        <div>
+          <div class="text-xs text-ink-400">Puntos de Golpe</div>
+          <div class="font-display text-3xl text-white">${state.hp}<span class="text-ink-400 text-lg">/${state.maxHp}</span></div>
+        </div>
+        <div class="text-right">
+          <div class="text-xs text-ink-400">Dados de Golpe</div>
+          <div class="font-display text-3xl text-gold-300">${hd.cur}<span class="text-ink-400 text-lg">/${hd.max}</span></div>
+        </div>
+      </div>
+      <button class="btn btn-heal w-full text-lg mb-3" data-act="rollHD" ${hd.cur === 0 || state.hp >= state.maxHp ? 'disabled' : ''}>
+        🎲 Tirar 1d${HIT_DIE} + ${CON_MOD}
+      </button>
+      <div class="text-xs text-ink-400 mb-1">¿Tiraste un dado físico? Ingresa el resultado del d${HIT_DIE}:</div>
+      <div class="grid grid-cols-[1fr_auto] gap-2">
+        <input id="hdManual" class="field text-center" type="number" min="1" max="${HIT_DIE}" inputmode="numeric" placeholder="1 – ${HIT_DIE}">
+        <button class="btn btn-slate px-4" data-act="manualHD" ${hd.cur === 0 ? 'disabled' : ''}>Aplicar</button>
+      </div>
+      ${state.hp >= state.maxHp ? '<p class="text-xs text-emerald-400 mt-2">PG al máximo.</p>' : ''}`;
+  }
+
+  function render() {
+    renderHeader(); renderTurn(); renderHp(); renderWild(); renderConc(); renderResources(); renderHitDice();
+    renderSpells(); renderWeapons(); renderItems(); renderLog();
+    if (!document.getElementById('modal').classList.contains('hidden')) renderModal();
+    save();
+  }
+
+  // ---------- Acciones ----------
+  const findItem = id => state.items.find(i => i.id === id);
+
+  function spendHitDie(face) {
+    const hd = state.res.hd;
+    if (hd.cur === 0) return;
+    hd.cur--;
+    const total = Math.max(0, face + CON_MOD);
+    const gained = heal(total, `Dado de Golpe (d${HIT_DIE}: ${face} + ${CON_MOD})`);
+    toast(`❤️ d${HIT_DIE} = ${face} → +${gained} PG`);
+  }
+
+  function openModal() {
+    const m = document.getElementById('modal');
+    m.classList.remove('hidden'); m.classList.add('flex');
+    renderModal();
+  }
+
+  function closeModal() {
+    const m = document.getElementById('modal');
+    m.classList.add('hidden'); m.classList.remove('flex');
+  }
+
+  function rollDice(d, crit = false) {
+    const rolls = rollMany(d.n * (crit ? 2 : 1), d.d);
+    return { rolls, total: sum(rolls) + (d.b || 0) };
+  }
+
+  function resetTurn() {
+    Object.keys(state.turn).forEach(k => { state.turn[k] = false; });
+    state.moved = 0; state.dash = false;
+  }
+
+  function spendWild() {
+    const uses = state.res.wild;
+    if (uses.cur === 0) { toast('Sin usos de Forma Salvaje'); return false; }
+    uses.cur--;
+    return true;
+  }
+
+  const actions = {
+    noop() { return false; },
+    toggle({ k }) {
+      if (k === 'move') {
+        setMoved(state.turn.move ? 0 : moveBudget());
+        return;
+      }
+      state.turn[k] = !state.turn[k];
+    },
+    move({ v }) { setMoved(state.moved + Number(v)); },
+    moveTo({ ft }) {
+      const n = Number(ft);
+      // Tocar la última casilla marcada la desmarca
+      setMoved(state.moved === n ? n - 5 : n);
+    },
+    toggleDash() {
+      state.dash = !state.dash;
+      if (state.dash) {
+        state.turn.action = true;
+        log(`🏃 Correr: movimiento ${fmt(moveBudget())}`);
+      }
+      setMoved(state.moved);
+    },
+    nextTurn() {
+      resetTurn();
+      state.round++;
+      log(`— Comienza el asalto ${state.round} —`);
+      toast(`⏭️ Asalto ${state.round}: economía restablecida`);
+    },
+    newCombat() {
+      if (!confirm('¿Iniciar un nuevo combate? El asalto vuelve a 1.')) return false;
+      resetTurn();
+      state.round = 1;
+      log('⚔️ ¡Nuevo combate!');
+    },
+    hp({ v }) {
+      const n = Number(v);
+      n < 0 ? damage(-n) : heal(n, 'Curación');
+    },
+    hpCustom({ mode }) {
+      const input = document.getElementById('hpCustom');
+      const n = Math.abs(parseInt(input.value, 10));
+      if (!n) { toast('Ingresa una cantidad'); return false; }
+      mode === 'dmg' ? damage(n) : heal(n, 'Curación');
+    },
+    setTemp() {
+      const n = Math.max(0, parseInt(document.getElementById('tempInput').value, 10) || 0);
+      state.temp = n;
+      log(`PG temporales fijados en ${n}`);
+    },
+    wildShape({ k }) {
+      if (state.form || !spendWild()) return false;
+      const f = findForm(k);
+      state.form = k;
+      state.turn.bonus = true;
+      // Los PG temporales no se acumulan: queda el valor mayor
+      state.temp = Math.max(state.temp, DRUID_LEVEL);
+      state.dash = false;
+      setMoved(state.moved);
+      log(`🐺 Forma Salvaje: ${f.name} (+${DRUID_LEVEL} PG temporales)`);
+      toast(`${f.icon} ¡Törma se transforma en ${f.name.toLowerCase()}!`);
+    },
+    leaveShape() {
+      const f = findForm(state.form);
+      state.form = null;
+      state.turn.bonus = true;
+      setMoved(state.moved);
+      log(`↩️ Fin de Forma Salvaje (${f.name})`);
+    },
+    landsAid() {
+      if (!spendWild()) return false;
+      const dmg = rollDice({ n: 2, d: 6 });
+      const hl = rollDice({ n: 2, d: 6 });
+      state.turn.action = true;
+      log(`🌱 Ayuda de la Tierra: TS Con CD ${SPELL_DC} · necrótico ${dmg.rolls.join('+')} = ${dmg.total} (mitad ${Math.floor(dmg.total / 2)}) · cura ${hl.total}`);
+      toast(`🌱 Ayuda de la Tierra: ${dmg.total} necrótico · cura ${hl.total} PG`);
+    },
+    companion() {
+      if (!spendWild()) return false;
+      log('🦉 Compañero Salvaje: Encontrar Familiar');
+      toast('🦉 Compañero Salvaje: invocás un familiar feérico');
+    },
+    endBark() {
+      state.bark = false;
+      log('🌳 Piel Robliza terminada');
+    },
+    dropConc() {
+      log(`🔮 Concentración terminada: ${state.conc}`);
+      state.conc = null;
+    },
+    concSave() {
+      const d = rollDie(20);
+      const total = d + MOD.CON;
+      log(`🔮 TS Con (concentración en ${state.conc}): ${d} ${signed(MOD.CON)} = ${total}`);
+      toast(`🔮 TS Con: ${d} ${signed(MOD.CON)} = ${total}`);
+    },
+    moveSphere() {
+      const dm = rollDice({ n: 2, d: 6 });
+      state.turn.bonus = true;
+      log(`🔥 Esfera de Llamas: TS Des CD ${SPELL_DC} · ${dm.rolls.join('+')} = ${dm.total} (mitad ${Math.floor(dm.total / 2)})`);
+      toast(`🔥 Esfera de Llamas: ${dm.total} de fuego`);
+    },
+    spend({ r }) {
+      const res = state.res[r];
+      if (res.cur === 0) return false;
+      res.cur--;
+      if (r === 'insp') {
+        log('🌟 Inspiración Heroica usada (repetir un d20)');
+        toast('🌟 Inspiración Heroica: repite el d20');
+      } else {
+        log(`${RESOURCES[r].icon} ${RESOURCES[r].name}: −1 (${res.cur}/${res.max})`);
+      }
+    },
+    inc({ r }) {
+      const res = state.res[r];
+      res.cur = clamp(res.cur + 1, 0, res.max);
+    },
+    cast({ i, slot, ritual, self }) {
+      const s = SPELLS[Number(i)];
+      if (state.form) { toast('No podés lanzar conjuros en Forma Salvaje'); return false; }
+      if (s.conc && state.conc && state.conc !== s.name &&
+          !confirm(`Ya estás concentrada en ${state.conc}. ¿Cambiar a ${s.name}?`)) return false;
+      const level = Number(slot) || 0;
+      let source = 'truco';
+      if (ritual) {
+        source = 'ritual';
+      } else if (level) {
+        const res = state.res[`slot${level}`];
+        if (res.cur === 0) { toast(`Sin espacios de nivel ${level}`); return false; }
+        res.cur--;
+        source = `espacio de nivel ${level}`;
+      }
+      if (!ritual) state.turn[TIME_SLOT[s.time]] = true;
+      if (s.conc) {
+        if (state.conc && state.conc !== s.name) log(`🔮 Concentración terminada: ${state.conc}`);
+        state.conc = s.name;
+      }
+      if (s.bark) state.bark = true;
+      // Lanzado con un espacio mayor que su nivel: suma los dados extra
+      const boost = def => (def && s.up && level > s.lvl) ? { ...def, n: def.n + s.up.n * (level - s.lvl) } : def;
+      const parts = [];
+      const dmgDef = boost(s.dmg);
+      if (s.atk) {
+        const d = rollDie(20);
+        const crit = d === 20;
+        const dm = dmgDef ? rollDice(dmgDef, crit) : null;
+        const atk = d === 1 ? 'pifia' : `${d} ${signed(SPELL_ATK)} = ${d + SPELL_ATK}${crit ? ' ¡CRÍTICO!' : ''}`;
+        parts.push(`ataque ${atk}${dm ? ` · daño ${dm.total}` : ''}`);
+      } else if (dmgDef) {
+        const dm = rollDice(dmgDef);
+        parts.push(`${s.save ? `TS ${s.save} CD ${SPELL_DC} · ` : ''}daño ${dm.rolls.join('+')} = ${dm.total}${s.half ? ` (mitad: ${Math.floor(dm.total / 2)})` : ''}`);
+      } else if (s.save) {
+        parts.push(`TS ${s.save} CD ${SPELL_DC}`);
+      }
+      const healDef = boost(s.heal);
+      if (healDef) {
+        const h = rollDice(healDef);
+        parts.push(self ? `te curás +${heal(h.total, s.name)} PG` : `cura ${h.rolls.join('+')} + ${healDef.b} = ${h.total} PG`);
+      }
+      if (s.bark) parts.push(`CA mínima ${BARK_AC}`);
+      log(`✨ ${s.name} (${source})${parts.length ? ': ' + parts.join(' | ') : ''}`);
+      toast(`✨ ${s.name}${parts.length ? ' · ' + parts.join(' | ') : ''}`);
+    },
+    rollWeapon({ i }) {
+      const w = WEAPONS[Number(i)];
+      const d = rollDie(20);
+      const crit = d === 20;
+      // Crítico: se duplican los dados de daño, no el modificador
+      const dmgRolls = rollMany(w.dice[0] * (crit ? 2 : 1), w.dice[1]);
+      const dmg = sum(dmgRolls) + w.dmg;
+      const atkText = d === 1 ? 'pifia (1 natural)' : `${d} ${signed(w.atk)} = ${d + w.atk}${crit ? ' ¡CRÍTICO!' : ''}`;
+      state.turn.action = true;
+      log(`${w.icon} ${w.name}: ataque ${atkText} · daño ${dmgRolls.join('+')} + ${w.dmg} = ${dmg}`);
+      toast(`${w.icon} ${w.name}: ${atkText} · Daño ${dmg}`);
+    },
+    useItem({ id }) {
+      const it = findItem(id);
+      if (!it || it.cur === 0) return false;
+      it.cur--;
+      log(`${it.icon} ${it.name}: −1 (${it.cur}/${it.max})`);
+    },
+    itemInc({ id }) {
+      const it = findItem(id);
+      if (!it) return false;
+      it.cur = clamp(it.cur + 1, 0, it.max);
+    },
+    itemRefill({ id }) {
+      const it = findItem(id);
+      if (!it) return false;
+      it.cur = it.max;
+      log(`${it.icon} ${it.name} rellenado (${it.max}/${it.max})`);
+    },
+    toggleEdit() { ui.editing = !ui.editing; },
+    addItem() {
+      const name = document.getElementById('newName').value.trim();
+      const max = Math.max(1, parseInt(document.getElementById('newMax').value, 10) || 1);
+      const info = document.getElementById('newInfo').value.trim();
+      if (!name) { toast('El consumible necesita un nombre'); return false; }
+      state.items.push({ id: uid(), icon: '📦', name, cur: max, max, info });
+      ['newName', 'newMax', 'newInfo'].forEach(i => { document.getElementById(i).value = ''; });
+    },
+    delItem({ id }) {
+      const it = findItem(id);
+      if (!it || !confirm(`¿Eliminar "${it.name}"?`)) return false;
+      state.items = state.items.filter(i => i.id !== id);
+    },
+    shortRest() {
+      const w = state.res.wild;
+      w.cur = clamp(w.cur + 1, 0, w.max);
+      log('☕ Descanso Corto: +1 Forma Salvaje');
+      toast('☕ Descanso Corto completado');
+      openModal();
+    },
+    longRest() {
+      if (!confirm('¿Realizar un Descanso Largo (8 horas)? Se restablece todo.')) return false;
+      state.hp = state.maxHp;
+      state.temp = 0;
+      state.conc = null;
+      state.form = null;
+      state.bark = false;
+      Object.values(state.res).forEach(r => { r.cur = r.max; });
+      resetTurn();
+      state.round = 1;
+      log('🌙 Descanso Largo: PG y todos los recursos restablecidos');
+      toast('🌙 Descanso Largo: ¡Törma está como nueva!');
+    },
+    rollHD() { spendHitDie(rollDie(HIT_DIE)); },
+    manualHD() {
+      const face = parseInt(document.getElementById('hdManual').value, 10);
+      if (!(face >= 1 && face <= HIT_DIE)) { toast(`El d${HIT_DIE} debe estar entre 1 y ${HIT_DIE}`); return false; }
+      spendHitDie(face);
+    },
+    closeModal() { closeModal(); },
+    rollCheck({ label, mod }) {
+      const d = rollDie(20);
+      const total = d + Number(mod);
+      const tag = d === 20 ? ' · ¡20 natural!' : d === 1 ? ' · 1 natural' : '';
+      log(`🎲 ${label}: ${d} ${signed(Number(mod))} = ${total}${tag}`);
+      toast(`🎲 ${label}: ${d} ${signed(Number(mod))} = ${total}${tag}`);
+    },
+    clearLog() { state.log = []; },
+    factoryReset() {
+      if (!confirm('¿Restaurar la ficha completa a sus valores iniciales? Se pierden los cambios.')) return false;
+      state = defaults();
+      ui.editing = false;
+    }
+  };
+
+  // ---------- Eventos ----------
+  document.addEventListener('click', e => {
+    const el = e.target.closest('[data-act]');
+    if (!el || el.disabled) return;
+    const fn = actions[el.dataset.act];
+    if (!fn) return;
+    if (fn({ ...el.dataset }) !== false) render();
+  });
+
+  document.addEventListener('keydown', e => {
+    const row = e.target.closest?.('.turn-row');
+    if (row && (e.key === ' ' || e.key === 'Enter') && e.target === row) {
+      e.preventDefault();
+      actions.toggle({ k: row.dataset.k });
+      render();
+    }
+    if (e.key === 'Escape') closeModal();
+  });
+
+  document.addEventListener('change', e => {
+    const el = e.target;
+    if (!el.dataset.item) return;
+    const it = findItem(el.dataset.item);
+    if (!it) return;
+    const f = el.dataset.field;
+    if (f === 'max') {
+      it.max = Math.max(1, parseInt(el.value, 10) || 1);
+      it.cur = Math.min(it.cur, it.max);
+    } else if (f === 'cur') {
+      it.cur = clamp(parseInt(el.value, 10) || 0, 0, it.max);
+    } else {
+      it[f] = el.value;
+    }
+    render();
+  });
+
+  document.getElementById('modal').addEventListener('click', e => {
+    if (e.target.id === 'modal') closeModal();
+  });
+
+  renderSheet();
+  render();
+})();
+</script>
+</body>
+</html>
