@@ -271,7 +271,7 @@
   const signed = n => (n >= 0 ? `+${n}` : `${n}`);
 
   const ABILITIES = [
-    { k: 'FUE', name: 'Fuerza',       score: 14, save: true },
+    { k: 'FUE', name: 'Fuerza',       score: 19, save: true, note: 'Guanteletes de Fuerza de Ogro (base 14)' },
     { k: 'DES', name: 'Destreza',     score: 20, save: false },
     { k: 'CON', name: 'Constitución', score: 17, save: true },
     { k: 'INT', name: 'Inteligencia', score: 11, save: false },
@@ -282,11 +282,11 @@
 
   const SKILLS = [
     ['Acrobacias', 'DES', true], ['Arcanos', 'INT'], ['Atletismo', 'FUE', true], ['Engaño', 'CAR'],
-    ['Historia', 'INT'], ['Interpretación', 'CAR'], ['Intimidación', 'CAR', true], ['Investigación', 'INT'],
+    ['Historia', 'INT'], ['Interpretación', 'CAR'], ['Intimidación', 'CAR', true, true], ['Investigación', 'INT'],
     ['Juego de Manos', 'DES'], ['Medicina', 'SAB'], ['Naturaleza', 'INT'], ['Percepción', 'SAB', true],
     ['Perspicacia', 'SAB', true], ['Persuasión', 'CAR', true], ['Religión', 'INT'], ['Sigilo', 'DES'],
     ['Supervivencia', 'SAB'], ['Trato con Animales', 'SAB']
-  ].map(([name, ab, prof]) => ({ name, ab, prof: !!prof, mod: MOD[ab] + (prof ? PROF : 0) }));
+  ].map(([name, ab, prof, adv]) => ({ name, ab, prof: !!prof, adv: !!adv, mod: MOD[ab] + (prof ? PROF : 0) }));
 
   const WEAPONS = [
     { name: 'Estoque +1', atk: 8, dice: [1, 8], dmg: 8, type: 'perforante (mágico)', range: fmt(5),
@@ -581,7 +581,7 @@
         <div class="bg-ink-950/60 border ${a.save ? 'border-gold-500/70' : 'border-ink-600'} rounded-xl p-2 text-center">
           <div class="text-[10px] uppercase tracking-widest text-ink-400">${a.name}</div>
           <div class="font-display text-2xl text-white">${signed(m)}</div>
-          <div class="text-xs text-ink-400 mb-1">${a.score}</div>
+          <div class="text-xs text-ink-400 mb-1"${a.note ? ` title="${a.note}"` : ''}>${a.score}${a.note ? ' 🧤' : ''}</div>
           <div class="grid grid-cols-2 gap-1">
             <button class="btn btn-slate text-[11px] min-h-[36px]" data-act="rollCheck" data-label="Prueba de ${a.name}" data-mod="${m}">Prueba</button>
             <button class="btn ${a.save ? 'btn-gold' : 'btn-slate'} text-[11px] min-h-[36px]" data-act="rollCheck" data-label="Salvación de ${a.name}" data-mod="${save}">TS ${signed(save)}</button>
@@ -590,8 +590,8 @@
     }).join('');
     const skills = SKILLS.map(s => `
       <button class="flex items-center justify-between gap-2 rounded-lg border ${s.prof ? 'border-gold-500/60 bg-gold-900/30' : 'border-ink-700 bg-ink-950/40'} px-3 py-2 min-h-[44px] text-left hover:border-gold-400"
-              data-act="rollCheck" data-label="${s.name}" data-mod="${s.mod}">
-        <span class="text-sm">${s.prof ? '◆' : '◇'} ${s.name} <span class="text-[10px] text-ink-400">${s.ab}</span></span>
+              data-act="rollCheck" data-label="${s.name}" data-mod="${s.mod}"${s.adv ? ' data-adv="1"' : ''}>
+        <span class="text-sm">${s.prof ? '◆' : '◇'} ${s.name} <span class="text-[10px] text-ink-400">${s.ab}</span>${s.adv ? ' <span class="text-[10px] text-gold-400" title="Casco de Intimidación">⛑️ Ventaja</span>' : ''}</span>
         <span class="font-display ${s.prof ? 'text-gold-300' : 'text-ink-300'}">${signed(s.mod)}</span>
       </button>`).join('');
     const weapons = WEAPONS.map((w, i) => `
@@ -642,6 +642,7 @@
         <div><span class="text-gold-400">Competencias:</span> todas las armaduras y escudos; armas simples y marciales.</div>
         <div><span class="text-gold-400">Herramientas:</span> Navegante, Vehículos acuáticos, Cartógrafo.</div>
         <div><span class="text-gold-400">Idiomas:</span> Común, Élfico, Jerga de Corsarios.</div>
+        <div><span class="text-gold-400">Objetos mágicos:</span> Estoque +1 · Amuleto Reloj (sintonizado) · Guanteletes de Fuerza de Ogro (sintonizado: Fuerza 19) · Casco de Intimidación (ventaja en Intimidación). Sintonización 2/3.</div>
       </div>`;
   }
 
@@ -881,12 +882,14 @@
       spendHitDie(face);
     },
     closeModal() { closeModal(); },
-    rollCheck({ label, mod }) {
-      const d = rollDie(20);
+    rollCheck({ label, mod, adv }) {
+      const rolls = rollMany(adv ? 2 : 1, 20);
+      const d = Math.max(...rolls);
       const total = d + Number(mod);
       const tag = d === 20 ? ' · ¡20 natural!' : d === 1 ? ' · 1 natural' : '';
-      log(`🎲 ${label}: ${d} ${signed(Number(mod))} = ${total}${tag}`);
-      toast(`🎲 ${label}: ${d} ${signed(Number(mod))} = ${total}${tag}`);
+      const shown = adv ? `${d} (ventaja: ${rolls.join(' / ')})` : `${d}`;
+      log(`🎲 ${label}: ${shown} ${signed(Number(mod))} = ${total}${tag}`);
+      toast(`🎲 ${label}: ${shown} ${signed(Number(mod))} = ${total}${tag}`);
     },
     rollWeapon({ i }) {
       const w = WEAPONS[Number(i)];
