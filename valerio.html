@@ -293,10 +293,8 @@
       mastery: 'Molestar (Vex): ventaja en tu próximo ataque contra ese objetivo', note: 'Sutil · Duelo +2' },
     { name: 'Arco Largo', atk: 8, dice: [1, 8], dmg: 5, type: 'perforante', range: `150/600 pies (${meters(150)}/${meters(600)} m)`,
       mastery: 'Ralentizar (Slow): −10 pies (3 m) de velocidad', note: 'A dos manos: sin escudo, CA 17' },
-    { name: 'Ballesta de Mano', atk: 8, dice: [1, 6], dmg: 5, type: 'perforante', range: `30/120 pies (${meters(30)}/${meters(120)} m)`,
-      mastery: 'Molestar (Vex): ventaja en tu próximo ataque contra ese objetivo', note: 'Ligera · Carga (1 disparo por acción, ataque o reacción)' },
     { name: 'Daga', atk: 8, dice: [1, 4], dmg: 7, type: 'perforante', range: `${fmt(5)} · arrojadiza 20/60 pies (6/18 m)`,
-      mastery: 'Sin maestría activa', note: 'x2 · Arrojada: 1d4 + 5 (sin Duelo)' }
+      mastery: 'Mellar (Nick): el ataque extra de arma Ligera va dentro de la acción Atacar (solo con 2 armas ligeras en mano, sin escudo ni Duelo)', note: 'x2 · Arrojada: 1d4 + 5 (sin Duelo)' }
   ];
 
   const FEATURES = [
@@ -306,7 +304,7 @@
     ['Tomar Aliento', `Acción adicional: cura 1d10 + ${FIGHTER_LEVEL}. 3 usos por descanso largo; recuperas 1 en descanso corto.`],
     ['Mente Táctica', 'Al fallar una prueba de característica, gasta 1 uso de Tomar Aliento para sumar 1d10. Si aun así fallas, no se gasta.'],
     ['Acción Súbita', '1 Acción Principal extra en tu turno (no para Magia). 1 uso por descanso corto o largo.'],
-    ['Maestría de Armas (4)', 'Estoque (Molestar), Arco Largo (Ralentizar) y Ballesta de Mano (Molestar). La Cimitarra se regaló: queda 1 maestría por elegir.'],
+    ['Maestría de Armas (4)', 'Estoque (Molestar), Arco Largo (Ralentizar) y Daga (Mellar). La Cimitarra se regaló: queda 1 maestría por elegir. Podés cambiar 1 tras cada descanso largo.'],
     ['Superioridad en Combate', '4 dados d8 por descanso corto o largo. CD de maniobras 16 (8 + 3 + 5 DES).'],
     ['Ataque de Maniobra', '+1d8 al daño; un aliado puede usar su reacción para moverse la mitad de su velocidad sin provocar ataques de oportunidad.'],
     ['Finta', 'Acción adicional: ventaja en tu próximo ataque este turno contra una criatura a 5 pies (1,5 m); +1d8 al daño si impacta.'],
