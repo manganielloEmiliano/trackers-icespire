@@ -88,7 +88,7 @@
     <div class="flex flex-wrap items-center justify-between gap-4">
       <div>
         <h1 class="font-display text-2xl sm:text-3xl font-extrabold text-gold-400 tracking-wide">⚜️ Lord Valerio</h1>
-        <p class="text-ink-300 text-sm sm:text-base">Guerrero Nivel 4 · Maestro del Combate · <span class="text-ink-400">D&amp;D 5e (2024)</span></p>
+        <p class="text-ink-300 text-sm sm:text-base">Guerrero Nivel 5 · Maestro del Combate · <span class="text-ink-400">D&amp;D 5e (2024)</span></p>
       </div>
       <div class="flex flex-wrap gap-2 text-center">
         <div class="bg-ink-950/70 border border-gold-600/40 rounded-xl px-3 py-2 min-w-[72px]">
@@ -97,7 +97,7 @@
         </div>
         <div class="bg-ink-950/70 border border-gold-600/40 rounded-xl px-3 py-2 min-w-[72px]">
           <div class="text-[10px] uppercase tracking-widest text-ink-400">PG</div>
-          <div class="font-display text-2xl text-crimson-400" id="hdrHp">40</div>
+          <div class="font-display text-2xl text-crimson-400" id="hdrHp">49</div>
         </div>
         <div class="bg-ink-950/70 border border-gold-600/40 rounded-xl px-3 py-2">
           <div class="text-[10px] uppercase tracking-widest text-ink-400">Velocidad</div>
@@ -109,7 +109,7 @@
         </div>
       </div>
     </div>
-    <p class="text-[11px] text-ink-400 mt-3">CA 19 = Cuero tachonado (12) + Des (+5) + Escudo (+2) · Iniciativa +7 (Alerta) · CD de maniobras 15</p>
+    <p class="text-[11px] text-ink-400 mt-3">CA 19 = Cuero tachonado (12) + Des (+5) + Escudo (+2) · Iniciativa +8 (Alerta) · CD de maniobras 16 · Ataque Adicional (2 ataques)</p>
   </header>
 
   <div class="grid gap-5 lg:grid-cols-2">
@@ -175,7 +175,7 @@
     <!-- FICHA -->
     <section class="card p-4 sm:p-5 lg:col-span-2">
       <details open>
-        <summary class="card-title text-xl cursor-pointer select-none">📜 Ficha del Personaje · Nivel 4</summary>
+        <summary class="card-title text-xl cursor-pointer select-none">📜 Ficha del Personaje · Nivel 5</summary>
         <div id="sheet" class="mt-4 space-y-5"></div>
       </details>
     </section>
@@ -217,7 +217,7 @@
 
   const STORAGE_KEY = 'lord-valerio-tracker-v5';
   const CON_MOD = 3; // Constitución 17 (hoja PDF v13)
-  const FIGHTER_LEVEL = 4;
+  const FIGHTER_LEVEL = 5;
   const SPEED = 30;
 
   // ---------- Utilidades ----------
@@ -233,17 +233,17 @@
   // ---------- Estado por defecto ----------
   const CALTROPS_INFO = `🎒 En tu cinturón · Acción: cubren ${fmt(5)} · TS Des CD 15 o 1 perforante y velocidad 0`;
   const defaults = () => ({
-    hp: 40, maxHp: 40, temp: 0,
+    hp: 49, maxHp: 49, temp: 0,
     round: 1, moved: 0, dash: false, surgeActive: false,
     turn: { move: false, action: false, extra: false, bonus: false, reaction: false, object: false },
     res: {
-      luck:  { cur: 2, max: 2 },
+      luck:  { cur: 3, max: 3 },
       insp:  { cur: 1, max: 1 },
       clock: { cur: 1, max: 1 },
       wind:  { cur: 3, max: 3 },
       surge: { cur: 1, max: 1 },
       sup:   { cur: 4, max: 4 },
-      hd:    { cur: 4, max: 4 }
+      hd:    { cur: 5, max: 5 }
     },
     items: [
       { id: uid(), icon: '🏹', name: 'Flechas de Arco Largo', cur: 59, max: 60, info: `Alcance 150/600 pies (${meters(150)}/${meters(600)} m) · Maestría: Ralentizar` },
@@ -260,13 +260,13 @@
     luck:  { icon: '🍀', name: 'Puntos de Suerte', sub: 'Afortunado · Ventaja propia o desventaja al atacante · Descanso Largo' },
     insp:  { icon: '🌟', name: 'Inspiración Heroica', sub: 'Ingenioso (Humano) · Repetir cualquier d20 · Descanso Largo' },
     clock: { icon: '⏳', name: 'Amuleto Reloj', sub: 'Sintonizado · Cambia una tirada de ataque por un 10 · 1/día' },
-    wind:  { icon: '💨', name: 'Tomar Aliento', sub: `Acción Adicional · Cura 1d10 + ${FIGHTER_LEVEL} · También Mente Táctica (+1d10 a prueba fallida)` },
+    wind:  { icon: '💨', name: 'Tomar Aliento', sub: `Acción Adicional · Cura 1d10 + ${FIGHTER_LEVEL} y te movés 15 pies sin provocar · También Mente Táctica (+1d10 a prueba fallida)` },
     surge: { icon: '⚡', name: 'Acción Súbita', sub: '+1 Acción Principal este turno' },
     sup:   { icon: '🎲', name: 'Dados de Superioridad', sub: 'd8 · CD 15 · Ataque de Maniobra · Finta · Parada' }
   };
 
-  // ---------- Ficha (Nivel 4 · hoja v14 corregida) ----------
-  const PROF = 2;
+  // ---------- Ficha (Nivel 5 · hoja v17 + objetos mágicos) ----------
+  const PROF = 3;
   const abilityMod = score => Math.floor((score - 10) / 2);
   const signed = n => (n >= 0 ? `+${n}` : `${n}`);
 
@@ -289,28 +289,32 @@
   ].map(([name, ab, prof, adv]) => ({ name, ab, prof: !!prof, adv: !!adv, mod: MOD[ab] + (prof ? PROF : 0) }));
 
   const WEAPONS = [
-    { name: 'Estoque +1', atk: 8, dice: [1, 8], dmg: 8, type: 'perforante (mágico)', range: fmt(5),
+    { name: 'Estoque +1', atk: 9, dice: [1, 8], dmg: 8, type: 'perforante (mágico)', range: fmt(5),
       mastery: 'Molestar (Vex): ventaja en tu próximo ataque contra ese objetivo', note: 'Sutil · Duelo +2' },
-    { name: 'Arco Largo', atk: 7, dice: [1, 8], dmg: 5, type: 'perforante', range: `150/600 pies (${meters(150)}/${meters(600)} m)`,
+    { name: 'Arco Largo', atk: 8, dice: [1, 8], dmg: 5, type: 'perforante', range: `150/600 pies (${meters(150)}/${meters(600)} m)`,
       mastery: 'Ralentizar (Slow): −10 pies (3 m) de velocidad', note: 'A dos manos: sin escudo, CA 17' },
-    { name: 'Daga', atk: 7, dice: [1, 4], dmg: 7, type: 'perforante', range: `${fmt(5)} · arrojadiza 20/60 pies (6/18 m)`,
+    { name: 'Ballesta de Mano', atk: 8, dice: [1, 6], dmg: 5, type: 'perforante', range: `30/120 pies (${meters(30)}/${meters(120)} m)`,
+      mastery: 'Molestar (Vex): ventaja en tu próximo ataque contra ese objetivo', note: 'Ligera · Carga (1 disparo por acción, ataque o reacción)' },
+    { name: 'Daga', atk: 8, dice: [1, 4], dmg: 7, type: 'perforante', range: `${fmt(5)} · arrojadiza 20/60 pies (6/18 m)`,
       mastery: 'Sin maestría activa', note: 'x2 · Arrojada: 1d4 + 5 (sin Duelo)' }
   ];
 
   const FEATURES = [
     ['Estilo de Combate: Duelo', '+2 al daño con un arma cuerpo a cuerpo a una mano y ninguna otra arma (el escudo está permitido).'],
+    ['Ataque Adicional (Nv 5)', 'Al usar la acción Atacar en tu turno, haces 2 ataques en vez de 1.'],
+    ['Desplazamiento Táctico (Nv 5)', 'Al usar Tomar Aliento, puedes moverte hasta la mitad de tu velocidad (15 pies / 4,5 m) sin provocar ataques de oportunidad.'],
     ['Tomar Aliento', `Acción adicional: cura 1d10 + ${FIGHTER_LEVEL}. 3 usos por descanso largo; recuperas 1 en descanso corto.`],
     ['Mente Táctica', 'Al fallar una prueba de característica, gasta 1 uso de Tomar Aliento para sumar 1d10. Si aun así fallas, no se gasta.'],
     ['Acción Súbita', '1 Acción Principal extra en tu turno (no para Magia). 1 uso por descanso corto o largo.'],
-    ['Maestría de Armas (4)', 'Estoque (Molestar) y Arco Largo (Ralentizar). La Cimitarra se vendió: quedan 2 maestrías por elegir.'],
-    ['Superioridad en Combate', '4 dados d8 por descanso corto o largo. CD de maniobras 15 (8 + 2 + 5 DES).'],
+    ['Maestría de Armas (4)', 'Estoque (Molestar), Arco Largo (Ralentizar) y Ballesta de Mano (Molestar). La Cimitarra se regaló: queda 1 maestría por elegir.'],
+    ['Superioridad en Combate', '4 dados d8 por descanso corto o largo. CD de maniobras 16 (8 + 3 + 5 DES).'],
     ['Ataque de Maniobra', '+1d8 al daño; un aliado puede usar su reacción para moverse la mitad de su velocidad sin provocar ataques de oportunidad.'],
     ['Finta', 'Acción adicional: ventaja en tu próximo ataque este turno contra una criatura a 5 pies (1,5 m); +1d8 al daño si impacta.'],
     ['Parada', 'Reacción al recibir daño cuerpo a cuerpo: reduces el daño en 1d8 + 5.'],
     ['Estudio de la Guerra', 'Competencia con Herramientas de Cartógrafo y en Perspicacia.'],
     ['Mejora de Característica (Nv 4)', '+2 a Destreza (19 → 20).'],
     ['Alerta', `+${PROF} a la iniciativa (total ${signed(MOD.DES + PROF)}). Puedes intercambiar tu iniciativa con un aliado dispuesto.`],
-    ['Afortunado', '2 Puntos de Suerte por descanso largo: ventaja propia o desventaja a un ataque contra ti.'],
+    ['Afortunado', '3 Puntos de Suerte (= bonificador de competencia) por descanso largo: ventaja propia o desventaja a un ataque contra ti.'],
     ['Ingenioso (Humano)', 'Inspiración Heroica tras cada descanso largo.']
   ];
 
@@ -318,7 +322,7 @@
     { k: 'move',     icon: '🦶', title: 'Movimiento',             desc: `Hasta ${fmt(30)}` },
     { k: 'action',   icon: '⚔️', title: 'Acción Principal',       desc: `Atacar · Agarre (${fmt(5)}) · Empujón (${fmt(5)}) · Destrabarse · Esquivar · Correr` },
     { k: 'extra',    icon: '⚡', title: 'Acción Principal extra', desc: 'Otorgada por Acción Súbita', onlyIfSurge: true },
-    { k: 'bonus',    icon: '💨', title: 'Acción Adicional',       desc: 'Tomar Aliento · Finta (1 dado sup.) · Beber poción' },
+    { k: 'bonus',    icon: '💨', title: 'Acción Adicional',       desc: 'Tomar Aliento (+ medio movimiento) · Finta (1 dado sup.) · Beber poción' },
     { k: 'reaction', icon: '🛡️', title: 'Reacción',               desc: `Ataque de oportunidad (${fmt(5)}) · Parada (reduce 1d8 + 5)` },
     { k: 'object',   icon: '🗝️', title: 'Interacción con Objeto', desc: 'Desenvainar, abrir una puerta, recoger algo…' }
   ];
@@ -330,10 +334,18 @@
       const raw = localStorage.getItem(STORAGE_KEY);
       if (!raw) return base;
       const saved = JSON.parse(raw);
+      // Subida de nivel: los máximos salen siempre del código; si crecen, la diferencia se suma al valor actual
+      const grow = (cur, oldMax, newMax) => clamp(cur + Math.max(0, newMax - (oldMax ?? newMax)), 0, newMax);
+      const savedRes = saved.res || {};
       return {
         ...base, ...saved,
+        maxHp: base.maxHp,
+        hp: grow(saved.hp ?? base.hp, saved.maxHp, base.maxHp),
         turn: { ...base.turn, ...saved.turn },
-        res: Object.fromEntries(Object.keys(base.res).map(k => [k, { ...base.res[k], ...(saved.res || {})[k] }])),
+        res: Object.fromEntries(Object.keys(base.res).map(k => {
+          const r = savedRes[k];
+          return [k, r ? { cur: grow(r.cur, r.max, base.res[k].max), max: base.res[k].max } : base.res[k]];
+        })),
         // Los abrojos pasaron de la mula al cinturón: actualiza la nota guardada
         items: Array.isArray(saved.items)
           ? saved.items.map(it => (it.name === 'Abrojos' ? { ...it, info: CALTROPS_INFO } : it))
@@ -620,7 +632,7 @@
         ${stat('CA', '19 <span class="text-xs text-ink-400">(17 sin escudo)</span>')}
         ${stat('Percepción pasiva', 10 + SKILLS.find(s => s.name === 'Percepción').mod)}
         ${stat('CD maniobras', 8 + PROF + MOD.DES)}
-        ${stat('Dados de Golpe', '4d10')}
+        ${stat('Dados de Golpe', '5d10')}
       </div>
       <div>
         <h3 class="text-sm uppercase tracking-widest text-ink-400 mb-2">Características y salvaciones</h3>
@@ -643,6 +655,7 @@
         <div><span class="text-gold-400">Herramientas:</span> Navegante, Vehículos acuáticos, Cartógrafo.</div>
         <div><span class="text-gold-400">Idiomas:</span> Común, Élfico, Jerga de Corsarios.</div>
         <div><span class="text-gold-400">Objetos mágicos:</span> Estoque +1 · Amuleto Reloj (sintonizado) · Guanteletes de Fuerza de Ogro (sintonizado: Fuerza 19) · Casco de Intimidación (ventaja en Intimidación). Sintonización 2/3.</div>
+        <div><span class="text-gold-400">Equipo destacado:</span> Ropa para el frío (ventaja en salvaciones contra frío extremo).</div>
       </div>`;
   }
 
