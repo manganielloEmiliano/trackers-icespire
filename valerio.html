@@ -249,7 +249,7 @@
       { id: uid(), icon: '🏹', name: 'Flechas de Arco Largo', cur: 59, max: 60, info: `Alcance 150/600 pies (${meters(150)}/${meters(600)} m) · Maestría: Ralentizar` },
       { id: uid(), icon: '🔥', name: 'Antorchas', cur: 10, max: 10, info: `Luz brillante ${fmt(20)} + tenue ${fmt(20)} · 1 hora` },
       { id: uid(), icon: '🍖', name: 'Raciones', cur: 6, max: 10, info: '1 por día de viaje' },
-      { id: uid(), icon: '🐴', name: 'Comida de los animales', cur: 20, max: 20, info: 'Días de forraje para la mula y el caballo de monta' },
+      { id: uid(), icon: '🐴', name: 'Comida de los animales', cur: 20, max: 20, info: 'Días de forraje para la mula y el caballo de monta vivo (el no muerto no come)' },
       { id: uid(), icon: '⭐', name: 'Abrojos', cur: 1, max: 1, info: CALTROPS_INFO },
       { id: uid(), icon: '🧪', name: 'Pociones de Curación', cur: 4, max: 4, heal: { n: 2, d: 4, b: 2 }, info: 'Acción Adicional · recupera 2d4 + 2 PG' }
     ],
@@ -653,6 +653,7 @@
         <div><span class="text-gold-400">Herramientas:</span> Navegante, Vehículos acuáticos, Cartógrafo.</div>
         <div><span class="text-gold-400">Idiomas:</span> Común, Élfico, Jerga de Corsarios.</div>
         <div><span class="text-gold-400">Objetos mágicos:</span> Estoque +1 · Amuleto Reloj (sintonizado) · Guanteletes de Fuerza de Ogro (sintonizado: Fuerza 19) · Casco de Intimidación (ventaja en Intimidación). Sintonización 2/3.</div>
+        <div><span class="text-gold-400">Monturas:</span> Caballo de monta (silla y alforjas) · Mula de carga · Caballo de monta no muerto, vinculado a Valerio (CA 11 · 13 PG · velocidad 60 pies / 18 m; no necesita forraje).</div>
         <div><span class="text-gold-400">Equipo destacado:</span> Ropa para el frío (ventaja en salvaciones contra frío extremo).</div>
       </div>`;
   }
