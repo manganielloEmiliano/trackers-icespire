@@ -243,6 +243,18 @@
             <p>2 flechas por turno (+8, 1d8 + 5). Cada impacto aplica <b>Ralentizar</b>. En el último, <b>Amenazante</b>: si falla la TS, el objetivo queda Asustado y <b>no puede acercarse</b>, y además está lento. Finta no sirve acá (pide estar a 1,5 m).</p>
           </div>
 
+          <div class="rounded-xl border border-gold-600/50 bg-ink-950/50 p-3">
+            <div class="font-display text-gold-300 text-base mb-1">🐉 7 · Contra dragones (Espada Larga +1)</div>
+            <div class="text-xs text-ink-400 mb-2">Cambiá el Estoque por la Espada Larga: +3d6 por golpe (≈ +10,5)</div>
+            <ol class="list-decimal ml-5 space-y-1">
+              <li><b>Acción adicional → Finta:</b> ventaja en el primer ataque (acá no tenés Molestar para encadenar).</li>
+              <li><b>Ataque 1 → Espada Larga con ventaja:</b> 1d8 + 7 + 3d6 + 1d8 (Finta). <b>Debilitar:</b> el dragón tiene desventaja en su próximo ataque.</li>
+              <li><b>Ataque 2 → Espada Larga + Ataque Amenazante:</b> +1d8 y TS de Sabiduría CD 16 o Asustado.</li>
+              <li><b>Reacción → Parada</b> contra garra o mordisco (no sirve contra el aliento: es una salvación, no un ataque).</li>
+            </ol>
+            <p class="text-xs text-ink-400 mt-2">Con escudo (1 mano): +8, 1d8 + 7 + 3d6, CA 19. A dos manos: 1d10 + 5 + 3d6 pero CA 17 y sin Duelo: <b>casi el mismo daño y peor defensa</b>, así que conviene a una mano con escudo. Contra todo lo que no sea dragón, el Estoque sigue siendo mejor (+9 y Molestar).</p>
+          </div>
+
           <div class="text-xs text-ink-400 space-y-1">
             <div><span class="text-gold-400">Fuera de combate:</span> Intimidación con <b>ventaja</b> (Casco) y +5; si fallás, Mente Táctica suma 1d10 (si igual fallás, no se gasta).</div>
             <div><span class="text-gold-400">Prioridad de dados:</span> Finta + Amenazante en el turno 1 contra la amenaza principal → Parada para golpes fuertes → guardá 1 dado si no hay descanso corto cerca.</div>
@@ -362,6 +374,10 @@
   const WEAPONS = [
     { name: 'Estoque +1', atk: 9, dice: [1, 8], dmg: 8, type: 'perforante (mágico)', range: fmt(5),
       mastery: 'Molestar (Vex): ventaja en tu próximo ataque contra ese objetivo', note: 'Sutil · Duelo +2' },
+    { name: 'Espada Larga +1 (1 mano)', atk: 8, dice: [1, 8], dmg: 7, type: 'cortante (mágico)', range: fmt(5),
+      mastery: 'Debilitar (Sap): el objetivo tiene desventaja en su próximo ataque antes del inicio de tu próximo turno', note: 'Usa FUE (Guanteletes) · Duelo +2 · con escudo', slayer: { label: 'Dragón', dice: [3, 6] } },
+    { name: 'Espada Larga +1 (2 manos)', atk: 8, dice: [1, 10], dmg: 5, type: 'cortante (mágico)', range: fmt(5),
+      mastery: 'Debilitar (Sap): el objetivo tiene desventaja en su próximo ataque antes del inicio de tu próximo turno', note: 'Versátil · sin escudo (CA 17) y sin Duelo', slayer: { label: 'Dragón', dice: [3, 6] } },
     { name: 'Arco Largo', atk: 8, dice: [1, 8], dmg: 5, type: 'perforante', range: `150/600 pies (${meters(150)}/${meters(600)} m)`,
       mastery: 'Ralentizar (Slow): −10 pies (3 m) de velocidad', note: 'A dos manos: sin escudo, CA 17' },
     { name: 'Daga', atk: 8, dice: [1, 4], dmg: 7, type: 'perforante', range: `${fmt(5)} · arrojadiza 20/60 pies (6/18 m)`,
@@ -375,7 +391,7 @@
     ['Tomar Aliento', `Acción adicional: cura 1d10 + ${FIGHTER_LEVEL}. 3 usos por descanso largo; recuperas 1 en descanso corto.`],
     ['Mente Táctica', 'Al fallar una prueba de característica, gasta 1 uso de Tomar Aliento para sumar 1d10. Si aun así fallas, no se gasta.'],
     ['Acción Súbita', '1 Acción Principal extra en tu turno (no para Magia). 1 uso por descanso corto o largo.'],
-    ['Maestría de Armas (4)', 'Estoque (Molestar), Arco Largo (Ralentizar) y Daga (Mellar). La Cimitarra se regaló: queda 1 maestría por elegir. Podés cambiar 1 tras cada descanso largo.'],
+    ['Maestría de Armas (4)', 'Estoque (Molestar), Espada Larga (Debilitar), Arco Largo (Ralentizar) y Daga (Mellar). Podés cambiar 1 tras cada descanso largo.'],
     ['Superioridad en Combate', '4 dados d8 por descanso corto o largo. CD de maniobras 16 (8 + 3 + 5 DES).'],
     ['Ataque Amenazante', 'Al impactar: +1d8 al daño y el objetivo hace TS de Sabiduría CD 16; si falla queda Asustado hasta el inicio de tu próximo turno (desventaja en ataques y pruebas mientras te vea; no puede acercarse a vos).'],
     ['Finta', 'Acción adicional: ventaja en tu próximo ataque este turno contra una criatura a 5 pies (1,5 m); +1d8 al daño si impacta.'],
@@ -689,7 +705,10 @@
         </div>
         <div class="text-xs mt-2"><span class="text-gold-400">Maestría:</span> ${w.mastery}</div>
         <div class="text-xs text-ink-400">${w.note}</div>
-        <button class="btn btn-crimson w-full mt-2" data-act="rollWeapon" data-i="${i}">🎲 Atacar</button>
+        <div class="grid ${w.slayer ? 'grid-cols-2' : 'grid-cols-1'} gap-2 mt-2">
+          <button class="btn btn-crimson w-full" data-act="rollWeapon" data-i="${i}">🎲 Atacar</button>
+          ${w.slayer ? `<button class="btn btn-gold w-full" data-act="rollWeapon" data-i="${i}" data-slayer="1">🐉 vs ${w.slayer.label} (+${w.slayer.dice[0]}d${w.slayer.dice[1]})</button>` : ''}
+        </div>
       </div>`).join('');
     const features = FEATURES.map(([t, d]) => `
       <li class="text-sm"><span class="text-gold-300 font-semibold">${t}:</span> <span class="text-ink-300">${d}</span></li>`).join('');
@@ -723,7 +742,7 @@
         <div><span class="text-gold-400">Competencias:</span> todas las armaduras y escudos; armas simples y marciales.</div>
         <div><span class="text-gold-400">Herramientas:</span> Navegante, Vehículos acuáticos, Cartógrafo.</div>
         <div><span class="text-gold-400">Idiomas:</span> Común, Élfico, Jerga de Corsarios.</div>
-        <div><span class="text-gold-400">Objetos mágicos:</span> Estoque +1 · Amuleto Reloj (sintonizado) · Guanteletes de Fuerza de Ogro (sintonizado: Fuerza 19) · Casco de Intimidación (ventaja en Intimidación). Sintonización 2/3.</div>
+        <div><span class="text-gold-400">Objetos mágicos:</span> Estoque +1 · Espada Larga +1 (+3d6 contra dragones; versátil) · Amuleto Reloj (sintonizado) · Guanteletes de Fuerza de Ogro (sintonizado: Fuerza 19) · Casco de Intimidación (ventaja en Intimidación). Sintonización 2/3.</div>
         <div><span class="text-gold-400">Monturas:</span> Caballo de monta (silla y alforjas) · Mula de carga · Caballo de monta no muerto, vinculado a Valerio (CA 11 · 13 PG · velocidad 60 pies / 18 m; no necesita forraje).</div>
         <div><span class="text-gold-400">Equipo destacado:</span> Ropa para el frío (ventaja en salvaciones contra frío extremo).</div>
       </div>`;
@@ -974,16 +993,19 @@
       log(`🎲 ${label}: ${shown} ${signed(Number(mod))} = ${total}${tag}`);
       toast(`🎲 ${label}: ${shown} ${signed(Number(mod))} = ${total}${tag}`);
     },
-    rollWeapon({ i }) {
+    rollWeapon({ i, slayer }) {
       const w = WEAPONS[Number(i)];
       const d = rollDie(20);
       const crit = d === 20;
-      // Crítico: se duplican los dados de daño, no el modificador
+      // Crítico: se duplican los dados de daño (incluido el extra contra dragones), no el modificador
       const dmgRolls = rollMany(w.dice[0] * (crit ? 2 : 1), w.dice[1]);
-      const dmg = sum(dmgRolls) + w.dmg;
+      const extra = slayer && w.slayer ? rollMany(w.slayer.dice[0] * (crit ? 2 : 1), w.slayer.dice[1]) : [];
+      const dmg = sum(dmgRolls) + sum(extra) + w.dmg;
+      const extraText = extra.length ? ` + 🐉 ${extra.join('+')}` : '';
+      const name = extra.length ? `${w.name} vs ${w.slayer.label}` : w.name;
       const atkText = d === 1 ? 'pifia (1 natural)' : `${d} ${signed(w.atk)} = ${d + w.atk}${crit ? ' ¡CRÍTICO!' : ''}`;
-      log(`⚔️ ${w.name}: ataque ${atkText} · daño ${dmgRolls.join('+')} + ${w.dmg} = ${dmg}`);
-      toast(`⚔️ ${w.name}: ${atkText} · Daño ${dmg}`);
+      log(`⚔️ ${name}: ataque ${atkText} · daño ${dmgRolls.join('+')}${extraText} + ${w.dmg} = ${dmg}`);
+      toast(`⚔️ ${name}: ${atkText} · Daño ${dmg}`);
     },
     clearLog() { state.log = []; },
     factoryReset() {
